@@ -1,0 +1,146 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #1a202c;
+  background-color: #f7fafc;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Brand colors - Red to Blue gradient */
+  --brand-red: #FF5757;
+  --brand-blue: #4A90E2;
+  --brand-primary: #FF5757;
+  --brand-gradient: linear-gradient(135deg, #FF5757 0%, #4A90E2 100%);
+}
+
+a {
+  font-weight: 500;
+  color: #5A5AA6;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #FF5757;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #f8fafc;
+}
+
+h1 {
+  font-size: 2.5em;
+  line-height: 1.1;
+  color: #1e293b;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #5A5AA6;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+button:hover {
+  background-color: #4a4a96;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(90, 90, 166, 0.3);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid #5A5AA6;
+  outline-offset: 2px;
+}
+
+/* Light theme is now the default */
+
+#root {
+  width: 100%;
+  height: 100vh;
+}
+
+/* App Container Layout */
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+.main-content {
+  margin-left: 260px;
+  padding: 2rem 3rem;
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f8fafc;
+}
+
+.main-content h1 {
+  margin-bottom: 1rem;
+}
+
+.main-content p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 80px;
+    padding: 1.5rem;
+  }
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
