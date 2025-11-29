@@ -1,0 +1,164 @@
+# .github/workflows/deploy.yml
+# Workflow para monorepo: client (Vite + React) y api (FastAPI)
+# Desencadena en push a main (ajusta según tu branch)
+
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [ 'main' ]
+
+env:
+  SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+jobs:
+  build_and_deploy_client:
+    name: Build & Deploy Client
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (client)
+        working-directory: ./client
+        run: |
+          npm ci
+
+      - name: Build client
+        working-directory: ./client
+        run: |
+          npm run build
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+
+      - name: Ensure server known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy client via rsync
+        run: |
+          rsync -avz --delete ./client/dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
+
+      - name: Restart nginx (or static server) on remote
+        run: |
+          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo systemctl restart nginx'
+
+  build_and_deploy_api:
+    name: Build & Deploy API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies (api)
+        working-directory: ./api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests (optional)
+        working-directory: ./api
+        run: |
+          pytest || true
+
+      - name: Archive API for transfer
+        working-directory: ./api
+        run: |
+          tar -czf api-deploy.tar.gz .
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+
+      - name: Send API archive to server
+        run: |
+          scp -P ${{ secrets.DO_SSH_PORT }} api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
+
+      - name: Remote deploy API (untar, venv, install, restart service)
+        run: |
+          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} '
+            set -e
+            cd ${DO_API_DIR:-${{ secrets.DO_API_DIR }}}
+            tar -xzf api-deploy.tar.gz -C .
+            # crear/activar venv e instalar
+            python3 -m venv .venv || true
+            source .venv/bin/activate
+            pip install -r requirements.txt
+            # migraciones si aplica
+            # systemd service restart
+            sudo systemctl restart myfastapi.service
+          '
+
+# ---------------------------
+# Scripts y unidades systemd de ejemplo (colocar en tu servidor)
+# scripts/deploy_api.sh (opcional)
+# ---------------------------
+
+# --- scripts/deploy_api.sh (ejemplo) ---
+# #!/usr/bin/env bash
+# set -euo pipefail
+# BASE_DIR="/var/www/myproject/api"
+# cd "$BASE_DIR"
+# tar -xzf api-deploy.tar.gz -C .
+# python3 -m venv .venv || true
+# . .venv/bin/activate
+# pip install -r requirements.txt
+# # Si usas alembic o tortoise-orm: ejecutar migraciones aquí
+# sudo systemctl restart myfastapi.service
+
+# --- Unit file systemd: /etc/systemd/system/myfastapi.service ---
+# [Unit]
+# Description=My FastAPI app (uvicorn)
+# After=network.target
+#
+# [Service]
+# User=www-data
+# Group=www-data
+# WorkingDirectory=/var/www/myproject/api
+# Environment="PATH=/var/www/myproject/api/.venv/bin"
+# ExecStart=/var/www/myproject/api/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+# Restart=always
+#
+# [Install]
+# WantedBy=multi-user.target
+
+# --- nginx reverse proxy example ---
+# server {
+#   listen 80;
+#   server_name example.com;
+#   location /api/ {
+#     proxy_pass http://127.0.0.1:8000/;
+#     proxy_set_header Host $host;
+#     proxy_set_header X-Real-IP $remote_addr;
+#     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#   }
+#   location / {
+#     root /var/www/myproject/client;
+#     try_files $uri $uri/ /index.html;
+#   }
+# }
+
+# ---------------------------
+# GitHub Secrets que debes crear (Settings -> Secrets):
+# - DO_SSH_PRIVATE_KEY : clave privada SSH del usuario con acceso al servidor
+# - DO_SSH_USER : usuario SSH (ej. deploy o root)
+# - DO_SERVER_HOST : IP o hostname del droplet
+# - DO_SSH_PORT : puerto SSH (ej. 22)
+# - DO_CLIENT_DIR : ruta en el servidor para archivos estáticos del client (ej. /var/www/myproject/client)
+# - DO_API_DIR : ruta en el servidor para el código del api (ej. /var/www/myproject/api)
+# - SSH_KNOWN_HOSTS (opcional) : contenido de known_hosts para evitar prompt
