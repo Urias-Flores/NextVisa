@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faUsers, faSignOutAlt, faCalendarAlt, faCog } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 import qvIcon from '../assets/QV Icon.png';
 import '../styles/sidebar.css';
 

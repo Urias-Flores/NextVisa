@@ -59,7 +59,7 @@ const ApplicantDetails: React.FC = () => {
             } else {
                 toast.error(result.error || 'Login failed');
             }
-        } catch (error) {
+        } catch {
             toast.dismiss(toastId);
             toast.error('Failed to test credentials. Please try again.');
         }

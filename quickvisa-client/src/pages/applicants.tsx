@@ -68,7 +68,7 @@ const Applicants: React.FC = () => {
                     <div className="error-state">
                         <div className="error-icon">⚠️</div>
                         <h3>Error Loading Applicants</h3>
-                        <p>{(error as any)?.response?.data?.detail || (error as Error)?.message || 'Failed to load applicants. Please try again.'}</p>
+                        <p>{(error as Error)?.message || 'Failed to load applicants. Please try again.'}</p>
                         <button className="retry-btn" onClick={() => refetch()}>
                             Try Again
                         </button>
