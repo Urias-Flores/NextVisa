@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faSpinner, faExclamationCircle, faCog } from '@fortawesome/free-solid-svg-icons';
 import { useConfiguration, useUpdateConfiguration } from '../hooks/useConfiguration';
-import type { Configuration } from '../types/configuration';
-import './configuration.css';
+import { type Configuration as configObject } from '../types/configuration';
+import '../styles/configuration.css';
 
 interface ConfigurationFormProps {
-    config: Configuration;
+    config: configObject;
 }
 
 const ConfigurationForm: React.FC<ConfigurationFormProps> = ({ config }) => {
