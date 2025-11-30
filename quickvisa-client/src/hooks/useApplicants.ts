@@ -79,7 +79,7 @@ export const useTestCredentials = () => {
 
     return useMutation({
         mutationFn: (id: number) => applicantApi.testCredentials(id),
-        onSuccess: (data, id) => {
+        onSuccess: (_data, id) => {
             // Invalidate applicant query to refresh data
             queryClient.invalidateQueries({ queryKey: applicantKeys.detail(id) });
         },

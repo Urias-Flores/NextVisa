@@ -1,7 +1,4 @@
-# .github/workflows/deploy.yml
-# Workflow para monorepo: client (Vite + React) y api (FastAPI)
-# Desencadena en push a main (ajusta según tu branch)
-
+# .github/workflows/main.yml
 name: Deploy to DigitalOcean
 
 on:
@@ -12,8 +9,8 @@ env:
   SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
 
 jobs:
-  build_and_deploy_client:
-    name: Build & Deploy Client
+  test_and_build_client:
+    name: Test & Build Client
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -25,14 +22,36 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies (client)
-        working-directory: ./client
+        working-directory: ./quickvisa-client
         run: |
           npm ci
 
+      - name: Lint (Test) client
+        working-directory: ./quickvisa-client
+        run: |
+          npm run lint
+
       - name: Build client
-        working-directory: ./client
+        working-directory: ./quickvisa-client
         run: |
           npm run build
+
+      - name: Upload client build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build
+          path: ./quickvisa-client/dist
+
+  deploy_client:
+    name: Deploy Client
+    needs: test_and_build_client
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download client build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build
+          path: ./dist
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.1
@@ -46,14 +65,14 @@ jobs:
 
       - name: Deploy client via rsync
         run: |
-          rsync -avz --delete ./client/dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
+          rsync -avz --delete ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
 
-      - name: Restart nginx (or static server) on remote
+      - name: Restart nginx (optional)
         run: |
-          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo systemctl restart nginx'
+          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo systemctl restart nginx || true'
 
-  build_and_deploy_api:
-    name: Build & Deploy API
+  test_and_deploy_api:
+    name: Test & Deploy API
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -65,18 +84,19 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies (api)
-        working-directory: ./api
+        working-directory: ./quickvisa-api
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests (optional)
-        working-directory: ./api
+      - name: Test API (Verify Imports)
+        working-directory: ./quickvisa-api
         run: |
-          pytest || true
+          # Simple check to ensure code is importable since no unit tests exist yet
+          python -c "from main import app; print('Import successful')"
 
       - name: Archive API for transfer
-        working-directory: ./api
+        working-directory: ./quickvisa-api
         run: |
           tar -czf api-deploy.tar.gz .
 
@@ -85,80 +105,33 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
 
+      - name: Ensure server known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SERVER_HOST }} >> ~/.ssh/known_hosts
+
       - name: Send API archive to server
         run: |
-          scp -P ${{ secrets.DO_SSH_PORT }} api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
+          # Ensure remote directory exists
+          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} "mkdir -p ${{ secrets.DO_API_DIR }}"
+          scp -P ${{ secrets.DO_SSH_PORT }} quickvisa-api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
 
-      - name: Remote deploy API (untar, venv, install, restart service)
+      - name: Remote deploy API
         run: |
           ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} '
             set -e
-            cd ${DO_API_DIR:-${{ secrets.DO_API_DIR }}}
+            cd ${{ secrets.DO_API_DIR }}
             tar -xzf api-deploy.tar.gz -C .
-            # crear/activar venv e instalar
-            python3 -m venv .venv || true
+            rm api-deploy.tar.gz
+            
+            # Create/activate venv and install dependencies
+            if [ ! -d ".venv" ]; then
+              python3 -m venv .venv
+            fi
             source .venv/bin/activate
             pip install -r requirements.txt
-            # migraciones si aplica
-            # systemd service restart
-            sudo systemctl restart myfastapi.service
+            
+            # Restart service (assuming systemd service named quickvisa-api)
+            # You might need to adjust the service name
+            sudo systemctl restart quickvisa-api || echo "Service quickvisa-api not found or failed to restart. Please check server configuration."
           '
-
-# ---------------------------
-# Scripts y unidades systemd de ejemplo (colocar en tu servidor)
-# scripts/deploy_api.sh (opcional)
-# ---------------------------
-
-# --- scripts/deploy_api.sh (ejemplo) ---
-# #!/usr/bin/env bash
-# set -euo pipefail
-# BASE_DIR="/var/www/myproject/api"
-# cd "$BASE_DIR"
-# tar -xzf api-deploy.tar.gz -C .
-# python3 -m venv .venv || true
-# . .venv/bin/activate
-# pip install -r requirements.txt
-# # Si usas alembic o tortoise-orm: ejecutar migraciones aquí
-# sudo systemctl restart myfastapi.service
-
-# --- Unit file systemd: /etc/systemd/system/myfastapi.service ---
-# [Unit]
-# Description=My FastAPI app (uvicorn)
-# After=network.target
-#
-# [Service]
-# User=www-data
-# Group=www-data
-# WorkingDirectory=/var/www/myproject/api
-# Environment="PATH=/var/www/myproject/api/.venv/bin"
-# ExecStart=/var/www/myproject/api/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
-# Restart=always
-#
-# [Install]
-# WantedBy=multi-user.target
-
-# --- nginx reverse proxy example ---
-# server {
-#   listen 80;
-#   server_name example.com;
-#   location /api/ {
-#     proxy_pass http://127.0.0.1:8000/;
-#     proxy_set_header Host $host;
-#     proxy_set_header X-Real-IP $remote_addr;
-#     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#   }
-#   location / {
-#     root /var/www/myproject/client;
-#     try_files $uri $uri/ /index.html;
-#   }
-# }
-
-# ---------------------------
-# GitHub Secrets que debes crear (Settings -> Secrets):
-# - DO_SSH_PRIVATE_KEY : clave privada SSH del usuario con acceso al servidor
-# - DO_SSH_USER : usuario SSH (ej. deploy o root)
-# - DO_SERVER_HOST : IP o hostname del droplet
-# - DO_SSH_PORT : puerto SSH (ej. 22)
-# - DO_CLIENT_DIR : ruta en el servidor para archivos estáticos del client (ej. /var/www/myproject/client)
-# - DO_API_DIR : ruta en el servidor para el código del api (ej. /var/www/myproject/api)
-# - SSH_KNOWN_HOSTS (opcional) : contenido de known_hosts para evitar prompt
