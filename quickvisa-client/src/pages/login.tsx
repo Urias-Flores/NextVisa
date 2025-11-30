@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 import '../styles/auth.css';
 
 const Login: React.FC = () => {
@@ -53,7 +53,7 @@ const Login: React.FC = () => {
                 // Successfully signed in, navigate to dashboard
                 navigate('/dashboard');
             }
-        } catch (error) {
+        } catch {
             setAuthError('An unexpected error occurred. Please try again.');
         } finally {
             setLoading(false);

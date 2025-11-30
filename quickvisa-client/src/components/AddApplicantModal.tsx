@@ -28,7 +28,7 @@ const AddApplicantModal: React.FC<AddApplicantModalProps> = ({ isOpen, onClose }
             schedule: '',
         },
         onSubmit: async ({ value }) => {
-            const { confirmPassword, ...applicantData } = value;
+            const { ...applicantData } = value;
             createApplicant(applicantData as ApplicantCreate, {
                 onSuccess: () => {
                     form.reset();
@@ -308,7 +308,7 @@ const AddApplicantModal: React.FC<AddApplicantModalProps> = ({ isOpen, onClose }
 
                     {isError && (
                         <div className="form-error">
-                            <span>❌ {(error as any)?.response?.data?.detail || 'Failed to create applicant. Please try again.'}</span>
+                            <span>❌ {String(error.message) || 'Failed to create applicant. Please try again.'}</span>
                         </div>
                     )}
 

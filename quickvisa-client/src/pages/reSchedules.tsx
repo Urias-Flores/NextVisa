@@ -110,7 +110,7 @@ const ReSchedules: React.FC = () => {
                     <div className="error-state">
                         <div className="error-icon">⚠️</div>
                         <h3>Error Loading Data</h3>
-                        <p>{(error as any)?.message || 'Failed to load re-schedules.'}</p>
+                        <p>{(error as Error)?.message || 'Failed to load re-schedules.'}</p>
                         <button className="retry-btn" onClick={() => refetch()}>Try Again</button>
                     </div>
                 ) : filteredReSchedules.length === 0 ? (

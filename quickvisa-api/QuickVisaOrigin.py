@@ -25,8 +25,6 @@ MY_SCHEDULE_DATE = "2026-03-25"  # 2020-12-02
 MY_CONDITION = lambda month, day: int(month) == 2 and int(day) <= 5
 
 SLEEP_TIME = 10  # recheck time interval
-MAIN_ORL = f"https://ais.usvisa-info.com/en-hn/niv/schedule/71480241/appointment/days/143.json?appointments[expedite]=false"
-MAIN_ARL = f"https://ais.usvisa-info.com/en-hn/niv/schedule/71480241/appointment/days/143.json?appointments[expedite]=false"
 MAIN_URL = "https://ais.usvisa-info.com/en-hn/niv"
 DATE_URL = f"{MAIN_URL}/schedule/{SCHEDULE}/appointment/days/143.json?appointments[expedite]=false"
 TIME_URL = f"{MAIN_URL}/schedule/{SCHEDULE}/appointment/times/143.json?date=%%s&appointments[expedite]=false"
