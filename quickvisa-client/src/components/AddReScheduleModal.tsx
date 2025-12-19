@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faSpinner, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { useCreateReSchedule } from '../hooks/useReSchedules';
 import { ScheduleStatus } from '../types/reSchedule';
+import { toast } from 'react-toastify';
 
 interface AddReScheduleModalProps {
     isOpen: boolean;
@@ -38,9 +39,10 @@ const AddReScheduleModal: React.FC<AddReScheduleModalProps> = ({ isOpen, onClose
             setStartDateTime('');
             setEndDateTime('');
             setFormError('');
+            toast.success('Re-schedule created successfully');
             onClose();
         } catch (err) {
-            setFormError('Failed to create re-schedule. Please try again.');
+            toast.error('Failed to create re-schedule. Please try again.');
             console.error(err);
         }
     };

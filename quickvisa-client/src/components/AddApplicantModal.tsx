@@ -5,6 +5,7 @@ import { useForm } from '@tanstack/react-form';
 import { useCreateApplicant } from '../hooks/useApplicants';
 import type { ApplicantCreate } from '../types/applicantServices';
 import '../styles/modal.css';
+import { toast } from 'react-toastify';
 
 interface AddApplicantModalProps {
     isOpen: boolean;
@@ -31,6 +32,7 @@ const AddApplicantModal: React.FC<AddApplicantModalProps> = ({ isOpen, onClose }
             const { ...applicantData } = value;
             createApplicant(applicantData as ApplicantCreate, {
                 onSuccess: () => {
+                    toast.success('Applicant created successfully');
                     form.reset();
                     handleClose();
                 },

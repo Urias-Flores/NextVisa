@@ -7,34 +7,39 @@ logger = logging.getLogger(__name__)
 
 def get_configuration() -> ConfigurationResponse:
     try:
+        logger.info("Attempting to get configuration from database...")
         db = SupabaseConnection.get_client()
+        logger.debug("Database client obtained, executing query...")
         # Get the first configuration found (assuming single config for now)
         response = db.from_("configuration").select("*").limit(1).execute()
         
         if response.data and len(response.data) > 0:
+            logger.info("Configuration retrieved successfully")
             return ConfigurationResponse(**response.data[0])
+        logger.warning("No configuration found in database")
         return None
     except Exception as e:
-        logger.error(f"Unable to get configuration", e)
+        logger.error(f"Unable to get configuration: {e}")
+        logger.exception("Full stack trace:")
         raise e
 
 def create_configuration(config: ConfigurationCreate) -> ConfigurationResponse:
     try:
         db = SupabaseConnection.get_client()
-        data = config.dict()
+        data = config.model_dump()
         response = db.from_("configuration").insert(data).execute()
         
         if response.data and len(response.data) > 0:
             return ConfigurationResponse(**response.data[0])
         raise Exception("Failed to create configuration")
     except Exception as e:
-        logger.error(f"Unable to create configuration", e)
+        logger.error(f"Unable to create configuration: {e}")
         raise e
 
 def update_configuration(id: int, config: ConfigurationUpdate) -> ConfigurationResponse:
     try:
         db = SupabaseConnection.get_client()
-        data = config.dict(exclude_unset=True)
+        data = config.model_dump(exclude_unset=True)
         data['updated_at'] = datetime.now().isoformat()
         
         response = db.from_("configuration").update(data).eq("id", id).execute()
@@ -43,5 +48,5 @@ def update_configuration(id: int, config: ConfigurationUpdate) -> ConfigurationR
             return ConfigurationResponse(**response.data[0])
         raise Exception(f"Failed to update configuration with id {id}")
     except Exception as e:
-        logger.error(f"Unable to update configuration", e)
+        logger.error(f"Unable to update configuration: {e}")
         raise e

@@ -119,6 +119,37 @@ def get_re_schedules_by_applicant(applicant_id: int, limit: Optional[int] = None
         raise DatabaseException("fetch_re_schedules_by_applicant", str(e))
 
 
+def get_re_schedules_by_status(status: str, limit: Optional[int] = None) -> List[dict]:
+    """
+    Fetch re-schedule records by status
+    
+    Args:
+        status: Status value to filter by
+        limit: Maximum number of records to return
+        
+    Returns:
+        List of re-schedule dictionaries
+        
+    Raises:
+        DatabaseException: If database operation fails
+    """
+    if not status:
+        raise ValueError("Status is required")
+        
+    try:
+        db = _get_db()
+        query = db.table(TABLE_NAME).select("*").eq("status", status).order("created_at", desc=True)
+        
+        if limit:
+            query = query.limit(limit)
+            
+        response = query.execute()
+        logger.info(f"Successfully fetched {len(response.data)} re-schedule records with status {status}")
+        return response.data
+    except Exception as e:
+        logger.error(f"Failed to fetch re-schedules by status {status}: {str(e)}", exc_info=True)
+        raise DatabaseException("fetch_re_schedules_by_status", str(e))
+
 def create_re_schedule(re_schedule_data: ReScheduleCreate) -> dict:
     """
     Create a new re-schedule record

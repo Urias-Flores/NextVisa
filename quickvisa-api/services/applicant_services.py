@@ -1,7 +1,8 @@
 from lib.database import SupabaseConnection
 from models.applicant import ApplicantCreate, ApplicantUpdate, ApplicantResponse
 from lib.exceptions import ApplicantNotFoundException, DatabaseException
-from lib.security import hash_password
+from lib.security import encrypt_password
+from models.applicant import ApplicantStatus
 import logging
 from typing import List, Optional
 
@@ -26,7 +27,7 @@ def _prepare_applicant_data(applicant_dict: dict) -> dict:
         Dictionary with hashed password if present
     """
     if 'password' in applicant_dict and applicant_dict['password']:
-        applicant_dict['password'] = hash_password(applicant_dict['password'])
+        applicant_dict['password'] = encrypt_password(applicant_dict['password'])
     return applicant_dict
 
 
@@ -265,7 +266,10 @@ def update_applicant_schedule(applicant_id: int, schedule_number: str) -> dict:
             raise ApplicantNotFoundException(f"Applicant with ID {applicant_id} not found")
         
         # Update schedule
-        update_data = {"schedule": schedule_number}
+        update_data = {
+            "schedule": schedule_number,
+            "re_schedule_status": ApplicantStatus.PENDING.value
+        }
         response = db.table(TABLE_NAME).update(update_data).eq("id", applicant_id).execute()
         
         if not response.data or len(response.data) == 0:
@@ -281,3 +285,59 @@ def update_applicant_schedule(applicant_id: int, schedule_number: str) -> dict:
     except Exception as e:
         logger.error(f"Error updating applicant schedule {applicant_id}: {str(e)}", exc_info=True)
         raise DatabaseException(f"Failed to update applicant schedule: {str(e)}")
+
+
+def get_applicants_by_re_schedule_status(status: str, limit: Optional[int] = None) -> List[dict]:
+    """
+    Fetch applicants filtered by re_schedule_status
+    
+    Args:
+        status: Status to filter by (e.g., 'LOGIN_PENDING', 'PENDING')
+        limit: Maximum number of records to return
+        
+    Returns:
+        List of applicant dictionaries
+    """
+    try:
+        db = _get_db()
+        query = db.table(TABLE_NAME).select("*").eq("re_schedule_status", status).order("created_at", desc=True)
+        if limit:
+            query = query.limit(limit)
+        response = query.execute()
+        logger.info(f"Successfully fetched {len(response.data)} applicants with status {status}")
+        return response.data
+    except Exception as e:
+        logger.error(f"Failed to fetch applicants by re_schedule_status {status}: {str(e)}", exc_info=True)
+        raise DatabaseException("fetch_applicants_by_re_schedule_status", str(e))
+
+
+def update_applicant_re_schedule_status(applicant_id: int, status: str) -> dict:
+    """
+    Update an applicant's re_schedule_status
+    
+    Args:
+        applicant_id: ID of the applicant
+        status: New status string
+        
+    Returns:
+        Updated applicant dictionary
+    """
+    try:
+        db = _get_db()
+        # Ensure applicant exists
+        existing = db.table(TABLE_NAME).select("id").eq("id", applicant_id).execute()
+        if not existing.data or len(existing.data) == 0:
+            raise ApplicantNotFoundException(f"Applicant with ID {applicant_id} not found")
+        update_data = {"re_schedule_status": status}
+        response = db.table(TABLE_NAME).update(update_data).eq("id", applicant_id).execute()
+        if not response.data or len(response.data) == 0:
+            raise DatabaseException("Update operation returned no data")
+        logger.info(f"Successfully updated re_schedule_status for applicant {applicant_id} -> {status}")
+        return response.data[0]
+    except ApplicantNotFoundException:
+        raise
+    except DatabaseException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating applicant re_schedule_status {applicant_id}: {str(e)}", exc_info=True)
+        raise DatabaseException(f"Failed to update applicant re_schedule_status: {str(e)}")

@@ -10,6 +10,7 @@ class ScheduleStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     NOT_FOUND = "NOT_FOUND"
+    LOGIN_PENDING = "LOGIN_PENDING"
 
 class ReScheduleBase(BaseModel):
     """Base schema for ReSchedule with common fields"""

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from models.applicant import ApplicantCreate, ApplicantUpdate, ApplicantResponse
 from services import applicant_services
-from services import selenium_service
+from services import applicant_web_services
 from lib.exceptions import ApplicantNotFoundException, DatabaseException
 from typing import List, Optional
+from lib.security import decrypt_password
 import logging
 
 logger = logging.getLogger(__name__)
@@ -169,13 +170,10 @@ def test_applicant_credentials(applicant_id: int):
         - error: Error message (if any)
     """
     try:
-        # Get applicant to retrieve email and password
-        applicant = applicant_services.get_applicant_by_id(applicant_id)
-        
+        # Get an applicant to retrieve email and password
+        applicant = applicant_services.get_applicant_with_password(applicant_id)
         email = applicant.get('email')
-        # Get the raw applicant data including password
-        raw_applicant = applicant_services.get_applicant_with_password(applicant_id)
-        password = raw_applicant.get('password')
+        password = applicant.get('password')
         
         if not email or not password:
             raise HTTPException(
@@ -185,7 +183,7 @@ def test_applicant_credentials(applicant_id: int):
         
         # Test credentials using Selenium
         logger.info(f"Testing credentials for applicant {applicant_id}")
-        result = selenium_service.test_applicant_credentials(email, password)
+        result = applicant_web_services.test_credentials(email, decrypt_password(password))
         
         # If successful and schedule number found, update applicant
         if result["success"] and result["schedule"]:
@@ -193,7 +191,6 @@ def test_applicant_credentials(applicant_id: int):
             applicant_services.update_applicant_schedule(applicant_id, result["schedule"])
         
         return result
-        
     except ApplicantNotFoundException as e:
         logger.error(f"Applicant not found: {e.message}")
         raise HTTPException(

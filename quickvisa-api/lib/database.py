@@ -24,16 +24,31 @@ class SupabaseConnection:
             url = os.getenv("SUPABASE_URL")
             key = os.getenv("SUPABASE_KEY")
 
+            # Debug logging to verify environment variables are loaded
+            if url:
+                # Mask the URL for security, only show first 20 characters
+                masked_url = url[:20] + "..." if len(url) > 20 else url
+                logger.info(f"SUPABASE_URL loaded: {masked_url}")
+            else:
+                logger.error("SUPABASE_URL is not set or empty")
+            
+            if key:
+                logger.info(f"SUPABASE_KEY loaded: {key[:10]}...")
+            else:
+                logger.error("SUPABASE_KEY is not set or empty")
+
             if not url:
-                raise Exception("SUPABASE_URL missing")
+                raise Exception("SUPABASE_URL environment variable is missing or empty. Check your .env file.")
             if not key:
-                raise Exception("SUPABASE_KEY missing")
+                raise Exception("SUPABASE_KEY environment variable is missing or empty. Check your .env file.")
 
             try:
+                logger.info(f"Attempting to connect to Supabase at: {url}")
                 self.__class__.__client = create_client(url, key)
                 logger.info("Supabase connection created successfully")
             except Exception as e:
-                logger.exception("Failed to create Supabase client")
+                logger.error(f"Failed to create Supabase client. URL: {url}, Error: {e}")
+                logger.exception("Full exception details:")
                 raise e
 
     @classmethod

@@ -1,31 +1,43 @@
-from passlib.context import CryptContext
+import os
+from cryptography.fernet import Fernet
 
-# Password hashing configuration
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+KEY = os.getenv("FERNET_KEY")
+fernet = Fernet(KEY)
 
-
-def hash_password(password: str) -> str:
+def encrypt_password(password: str) -> str:
     """
-    Hash a password using bcrypt
+    Encrypt a password using bcrypt
     
     Args:
         password: Plain text password
         
     Returns:
-        Hashed password
+        encrypted password
     """
-    return pwd_context.hash(password)
+    return fernet.encrypt(password.encode("utf-8")).decode("utf-8")
+
+def decrypt_password(encrypted_password: str) -> str:
+    """
+        Decrypt a password using fernet
+
+        Args:
+            encrypted_password: Plain text password
+
+        Returns:
+            password
+        """
+    return fernet.decrypt(encrypted_password.encode("utf-8")).decode("utf-8")
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str, encrypted_password: str) -> bool:
     """
-    Verify a password against a hash
+    Verify a password against encrypted password
     
     Args:
         plain_password: Plain text password
-        hashed_password: Hashed password to verify against
+        encrypted_password: Hashed password to verify against
         
     Returns:
         True if password matches, False otherwise
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    return fernet.decrypt(encrypted_password.encode("utf-8")).decode("utf-8") == plain_password

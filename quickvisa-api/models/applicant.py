@@ -1,9 +1,8 @@
 ﻿from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
-from datetime import datetime
 from enum import Enum
 
-class applicant_status(Enum):
+class ApplicantStatus(Enum):
     PENDING = "PENDING"
     PROCESSING = "PROCESSING"
     COMPLETED = "COMPLETED"
@@ -21,7 +20,7 @@ class ApplicantBase(BaseModel):
     min_date: Optional[str] = None
     max_date: Optional[str] = None
     schedule: Optional[str] = None
-    re_schedule_status: Optional[applicant_status] = applicant_status.PENDING
+    re_schedule_status: Optional[ApplicantStatus] = ApplicantStatus.PENDING
 
 class ApplicantCreate(BaseModel):
     """Schema for creating a new applicant"""
@@ -32,7 +31,7 @@ class ApplicantCreate(BaseModel):
     schedule_date: Optional[str] = None
     min_date: Optional[str] = None
     max_date: Optional[str] = None
-    schedule: Optional[str] = None
+    re_schedule_status: Optional[ApplicantStatus] = ApplicantStatus.LOGIN_PENDING
     
 class ApplicantUpdate(BaseModel):
     """Schema for updating an existing applicant - all fields optional"""
@@ -57,7 +56,7 @@ class ApplicantResponse(BaseModel):
     min_date: Optional[str] = None
     max_date: Optional[str] = None
     schedule: Optional[str] = None
-    re_schedule_status: Optional[applicant_status] = applicant_status.PENDING
+    re_schedule_status: Optional[ApplicantStatus] = ApplicantStatus.PENDING
     created_at: str
     updated_at: str
     
