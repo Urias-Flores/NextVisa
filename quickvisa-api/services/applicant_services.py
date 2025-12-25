@@ -111,8 +111,8 @@ def create_applicant(applicant_data: ApplicantCreate) -> dict:
     """
     try:
         db = _get_db()
-        # Convert Pydantic model to dict
-        applicant_dict = applicant_data.model_dump()
+        # Convert Pydantic model to dict (mode='json' converts enums to their values)
+        applicant_dict = applicant_data.model_dump(mode='json')
         
         # Hash password before storing
         applicant_dict = _prepare_applicant_data(applicant_dict)

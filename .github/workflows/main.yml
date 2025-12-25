@@ -3,10 +3,7 @@ name: Deploy to DigitalOcean
 
 on:
   push:
-    branches: [ 'main' ]
-
-env:
-  SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+    branches: ["main"]
 
 jobs:
   test_and_build_client:
@@ -19,7 +16,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies (client)
         working-directory: ./quickvisa-client
@@ -53,23 +50,18 @@ jobs:
           name: client-build
           path: ./dist
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.8.1
-        with:
-          ssh-private-key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
-
-      - name: Ensure server known hosts
+      - name: Install sshpass
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SERVER_HOST }} >> ~/.ssh/known_hosts
+          sudo apt-get update
+          sudo apt-get install -y sshpass
 
       - name: Deploy client via rsync
         run: |
-          rsync -avz --delete ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
+          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" rsync -avz --delete -e "ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no" ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
 
       - name: Restart nginx (optional)
         run: |
-          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo systemctl restart nginx || true'
+          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo systemctl restart nginx || true'
 
   test_and_deploy_api:
     name: Test & Deploy API
@@ -81,7 +73,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies (api)
         working-directory: ./quickvisa-api
@@ -100,25 +92,20 @@ jobs:
         run: |
           tar -czf api-deploy.tar.gz .
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.8.1
-        with:
-          ssh-private-key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
-
-      - name: Ensure server known hosts
+      - name: Install sshpass
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SERVER_HOST }} >> ~/.ssh/known_hosts
+          sudo apt-get update
+          sudo apt-get install -y sshpass
 
       - name: Send API archive to server
         run: |
           # Ensure remote directory exists
-          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} "mkdir -p ${{ secrets.DO_API_DIR }}"
-          scp -P ${{ secrets.DO_SSH_PORT }} quickvisa-api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
+          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} "mkdir -p ${{ secrets.DO_API_DIR }}"
+          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" scp -P ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no quickvisa-api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
 
       - name: Remote deploy API
         run: |
-          ssh -p ${{ secrets.DO_SSH_PORT }} ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} '
+          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} '
             set -e
             cd ${{ secrets.DO_API_DIR }}
             tar -xzf api-deploy.tar.gz -C .

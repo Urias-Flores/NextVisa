@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from models.re_schedule import ReScheduleCreate, ReScheduleUpdate, ReScheduleResponse
-from services import re_schedule_services
+from services import re_schedule_services, applicant_web_services
 from services.re_schedule_services import ReScheduleNotFoundException
 from lib.exceptions import DatabaseException
 from typing import List, Optional
@@ -180,3 +180,33 @@ def delete_re_schedule(re_schedule_id: int):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred"
         )
+
+@router.post("/{reschedule_id}/process_reschedule")
+def process_reschedule(reschedule_id: int):
+    """
+    Try to reschedule directly using Selenium and extract a schedule number
+
+    - **applicant_id**: The ID of the applicant to test
+
+    Returns:
+        - success: Whether login was successful
+        - schedule: Extracted schedule number (if found)
+        - error: Error message (if any)
+    """
+    if not reschedule_id:
+        raise ValueError("Reschedule ID is required")
+
+    try:
+        rs = re_schedule_services.get_re_schedule_by_id(reschedule_id)
+
+        if not rs:
+            raise Exception("Missing reschedule")
+        else:
+            logger.info(f"Processing reschedule {reschedule_id}")
+        applicant_id = rs.get('applicant')
+        if not applicant_id:
+            raise Exception("Missing applicant id")
+
+        applicant_web_services.process_re_schedule(reschedule_id)
+    except Exception as e:
+        logger.error(f"Error processing reschedule {reschedule_id}: {str(e)}", exc_info=True)
