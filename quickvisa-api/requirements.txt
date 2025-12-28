@@ -2,6 +2,7 @@ fastapi
 uvicorn
 supabase
 pydantic
+pydantic[email]
 python-dotenv
 selenium
 requests
