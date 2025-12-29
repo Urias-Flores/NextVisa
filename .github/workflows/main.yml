@@ -57,7 +57,7 @@ jobs:
 
       - name: Deploy client via rsync
         run: |
-          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" rsync -avz --delete --timeout=300 --contimeout=60 -e "ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=3" ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
+          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" rsync -avz --delete --timeout=300 -e "ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=3" ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
 
       - name: Restart pm2 service
         run: |
@@ -82,9 +82,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Archive API for transfer
-        working-directory: ./quickvisa-api
         run: |
-          tar -czf api-deploy.tar.gz --exclude='api-deploy.tar.gz' .
+          tar -czf api-deploy.tar.gz -C ./quickvisa-api .
 
       - name: Install sshpass
         run: |
@@ -112,7 +111,7 @@ jobs:
             source .venv/bin/activate
             pip install -r requirements.txt
             
-            # Restart service (assuming systemd service named quickvisa-api)
+            # Restart service (assuming pm2 service named quickvisa-api)
             # You might need to adjust the service name
             sudo pm2 restart quickvisa-api || echo "Service quickvisa-api not found or failed to restart. Please check server configuration."
           '
