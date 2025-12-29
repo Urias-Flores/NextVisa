@@ -30,6 +30,10 @@ jobs:
 
       - name: Build client
         working-directory: ./quickvisa-client
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: |
           npm run build
 
@@ -88,6 +92,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Create .env file for API
+        working-directory: ./quickvisa-api
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
+          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
+          echo "FERNET_KEY=${{ secrets.FERNET_KEY }}" >> .env
+
       - name: Archive API for transfer
         run: |
           tar -czf api-deploy.tar.gz -C ./quickvisa-api .
@@ -114,8 +125,8 @@ jobs:
             
             python3 -m venv .venv || true
             source .venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt
+            pip3 install --upgrade pip
+            pip3 install -r requirements.txt
             
             sudo pm2 restart quickvisa-api || echo "Service not found"
           '
