@@ -92,20 +92,22 @@ jobs:
         run: |
           tar -czf api-deploy.tar.gz -C ./quickvisa-api .
 
-      - name: Install sshpass
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y sshpass
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary_due_to_flag
+          if_key_exists: replace
 
       - name: Send API archive to server
         run: |
           # Ensure remote directory exists
-          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} "mkdir -p ${{ secrets.DO_API_DIR }}"
-          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" scp -P ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no quickvisa-api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
+          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} "mkdir -p ${{ secrets.DO_API_DIR }}"
+          scp -P ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no quickvisa-api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
 
       - name: Remote deploy API
         run: |
-          sshpass -p "${{ secrets.DO_SSH_PASSWORD }}" ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} '
+          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} '
             set -e
             cd ${{ secrets.DO_API_DIR }}
             tar -xzf api-deploy.tar.gz -C .
