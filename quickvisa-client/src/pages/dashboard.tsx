@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
                         <FontAwesomeIcon icon={faClock} />
                     </div>
                     <div className="stat-content">
-                        <h3>In Progress</h3>
+                        <h3>In Progres</h3>
                         <p className="stat-number">0</p>
                     </div>
                 </div>
