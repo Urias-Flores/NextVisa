@@ -101,9 +101,8 @@ jobs:
 
       - name: Send API archive to server
         run: |
-          # Ensure remote directory exists
           ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} "mkdir -p ${{ secrets.DO_API_DIR }}"
-          scp -P ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no quickvisa-api/api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
+          scp -P ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no api-deploy.tar.gz ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_API_DIR }}/
 
       - name: Remote deploy API
         run: |
@@ -113,14 +112,10 @@ jobs:
             tar -xzf api-deploy.tar.gz -C .
             rm api-deploy.tar.gz
             
-            # Create/activate venv and install dependencies
-            if [ ! -d ".venv" ]; then
-              python3 -m venv .venv
-            fi
+            python3 -m venv .venv || true
             source .venv/bin/activate
+            pip install --upgrade pip
             pip install -r requirements.txt
             
-            # Restart service (assuming pm2 service named quickvisa-api)
-            # You might need to adjust the service name
-            sudo pm2 restart quickvisa-api || echo "Service quickvisa-api not found or failed to restart. Please check server configuration."
+            sudo pm2 restart quickvisa-api || echo "Service not found"
           '
