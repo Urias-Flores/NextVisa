@@ -1,4 +1,4 @@
-/* Sidebar Styles with QuickVisa Brand Colors - Light Theme */
+/* Sidebar Styles with NextVisa Brand Colors - Light Theme */
 .sidebar {
   position: fixed;
   left: 0;
@@ -40,7 +40,7 @@
 .logo-text {
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #FF5757, #4A90E2);
+  background: linear-gradient(135deg, #ff5757, #4a90e2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -76,13 +76,17 @@
 }
 
 .sidebar-item::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 87, 87, 0.08), rgba(74, 144, 226, 0.08));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 87, 87, 0.08),
+    rgba(74, 144, 226, 0.08)
+  );
   opacity: 0;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 12px;
@@ -98,8 +102,12 @@
 }
 
 .sidebar-item.active {
-  background: linear-gradient(135deg, rgba(255, 87, 87, 0.15), rgba(74, 144, 226, 0.15));
-  color: #4A90E2;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 87, 87, 0.15),
+    rgba(74, 144, 226, 0.15)
+  );
+  color: #4a90e2;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
 }
@@ -123,7 +131,7 @@
 }
 
 .sidebar-item.active .sidebar-icon {
-  color: #4A90E2;
+  color: #4a90e2;
 }
 
 .sidebar-label {

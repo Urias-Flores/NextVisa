@@ -53,8 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         <aside className={`sidebar ${className}`}>
             <div className="sidebar-header">
                 <div className="sidebar-logo">
-                    <img src={qvIcon} alt="QuickVisa Logo" className="logo-icon" />
-                    <span className="logo-text">QuickVisa</span>
+                    <img src={qvIcon} alt="NextVisa Logo" className="logo-icon" />
+                    <span className="logo-text">NextVisa</span>
                 </div>
             </div>
 

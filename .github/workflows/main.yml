@@ -19,17 +19,17 @@ jobs:
           node-version: "18"
 
       - name: Install dependencies (client)
-        working-directory: ./quickvisa-client
+        working-directory: ./nextvisa-client
         run: |
           npm ci
 
       - name: Lint (Test) client
-        working-directory: ./quickvisa-client
+        working-directory: ./nextvisa-client
         run: |
           npm run lint
 
       - name: Build client
-        working-directory: ./quickvisa-client
+        working-directory: ./nextvisa-client
         env:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: client-build
-          path: ./quickvisa-client/dist
+          path: ./nextvisa-client/dist
 
   deploy_client:
     name: Deploy Client
@@ -72,7 +72,7 @@ jobs:
 
       - name: Restart pm2 service
         run: |
-          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo pm2 restart quickvisa-app'
+          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo pm2 restart nextvisa-app'
 
   test_and_deploy_api:
     name: Test & Deploy API
@@ -87,13 +87,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies (api)
-        working-directory: ./quickvisa-api
+        working-directory: ./nextvisa-api
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Create .env file for API
-        working-directory: ./quickvisa-api
+        working-directory: ./nextvisa-api
         run: |
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
           echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
@@ -101,7 +101,7 @@ jobs:
 
       - name: Archive API for transfer
         run: |
-          tar -czf api-deploy.tar.gz -C ./quickvisa-api .
+          tar -czf api-deploy.tar.gz -C ./nextvisa-api .
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
@@ -128,5 +128,5 @@ jobs:
             pip3 install --upgrade pip
             pip3 install -r requirements.txt
             
-            sudo pm2 restart quickvisa-api || echo "Service not found"
+            sudo pm2 restart nextvisa-api || echo "Service not found"
           '

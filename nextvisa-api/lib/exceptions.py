@@ -1,4 +1,4 @@
-"""Custom exceptions for QuickVisa API"""
+"""Custom exceptions for NextVisa API"""
 
 
 class ApplicantNotFoundException(Exception):
