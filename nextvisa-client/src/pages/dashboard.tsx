@@ -7,7 +7,7 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-container">
             <div className="dashboard-header">
                 <h1>Dashboard</h1>
-                <p>Welcome to QuickVisa - Your visa application management system</p>
+                <p>Welcome to NextVisa - Your visa application management system</p>
             </div>
 
             <div className="stats-grid">

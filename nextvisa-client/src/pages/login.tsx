@@ -65,10 +65,10 @@ const Login: React.FC = () => {
             <div className="auth-card">
                 <div className="auth-header">
                     <div className="auth-logo">
-                        <img src="/src/assets/QV_Icon-removebg.png" alt="QuickVisa" />
+                        <img src="/src/assets/QV_Icon-removebg.png" alt="NextVisa" />
                     </div>
                     <h1>Welcome Back</h1>
-                    <p>Sign in to your QuickVisa account</p>
+                    <p>Sign in to your NextVisa account</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="auth-form">

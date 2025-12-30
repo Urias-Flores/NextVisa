@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error stopping state machine: {e}", exc_info=True)
 
 app = FastAPI(
-    title="QuickVisa API",
+    title="NextVisa API",
     description="API for managing visa applications and applicants",
     version="0.0.1",
     docs_url="/docs",  # Swagger UI
@@ -66,7 +66,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "QuickVisa API is running"}
+    return {"message": "NextVisa API is running"}
 
 @app.get("/status")
 def get_status():
