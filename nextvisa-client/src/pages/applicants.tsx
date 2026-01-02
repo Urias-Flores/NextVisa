@@ -2,8 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faUserPlus, faSearch, faEnvelope, faCalendar, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { useApplicants } from '../hooks/useApplicants';
+import { useApplicants, useDeleteApplicant } from '../hooks/useApplicants';
 import AddApplicantModal from '../components/AddApplicantModal';
+import { toast } from 'react-toastify';
 
 const Applicants: React.FC = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const Applicants: React.FC = () => {
 
     // Use TanStack Query to fetch applicants
     const { data: applicants = [], isLoading, isError, error, refetch } = useApplicants();
+    const { mutate: deleteApplicant } = useDeleteApplicant();
 
     // Filter applicants based on search query
     const filteredApplicants = useMemo(() => {
@@ -32,6 +34,22 @@ const Applicants: React.FC = () => {
             month: 'short',
             day: 'numeric'
         });
+    };
+
+    const handleDelete = (id: number) => {
+        try {
+            deleteApplicant(id, {
+                onSuccess: () => {
+                    toast.success('Applicant deleted successfully');
+                },
+                onError: (error) => {
+                    console.error('Error deleting applicant:', error);
+                    toast.error('Error deleting applicant');
+                },
+            });
+        } catch (error) {
+            console.error('Error deleting applicant:', error);
+        }
     };
 
     return (
@@ -130,6 +148,12 @@ const Applicants: React.FC = () => {
                                                     onClick={() => navigate(`/applicants/${applicant.id}`)}
                                                 >
                                                     View
+                                                </button>
+                                                <button
+                                                    className="action-btn"
+                                                    onClick={() => handleDelete(applicant.id)}
+                                                >
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

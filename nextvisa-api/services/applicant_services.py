@@ -210,7 +210,20 @@ def delete_applicant(applicant_id: int) -> bool:
     # First check if applicant exists
     get_applicant_by_id(applicant_id)
     
-
+    try:
+        db = _get_db()
+        response = db.table(TABLE_NAME).delete().eq("id", applicant_id).execute()
+        
+        if not response.data or len(response.data) == 0:
+            raise DatabaseException("delete_applicant", "No data returned after delete")
+            
+        logger.info(f"Successfully deleted applicant with ID {applicant_id}")
+        return True
+    except ApplicantNotFoundException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete applicant {applicant_id}: {str(e)}", exc_info=True)
+        raise DatabaseException("delete_applicant", str(e))
 
 
 def get_applicant_with_password(applicant_id: int) -> dict:
