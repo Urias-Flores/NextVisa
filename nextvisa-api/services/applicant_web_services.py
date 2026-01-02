@@ -16,63 +16,9 @@ from models.applicant import ApplicantBase
 from services import re_schedule_services, applicant_services, configuration_services
 from models.re_schedule import ReScheduleUpdate, ScheduleStatus
 from lib import security
+from lib.pushhover import PushHover
 
 logger = logging.getLogger(__name__)
-
-def __do_login(driver, email: str, password: str):
-    main_url = get_main_url()
-    logger.info(f"Testing credentials for {email}")
-
-    driver.get(main_url)
-    time.sleep(1)
-
-    try:
-        driver.find_element(By.ID, 'user_email')
-    except:
-        try:
-            a = driver.find_element(By.XPATH, '//a[@class="down-arrow bounce"]')
-            a.click()
-            time.sleep(1)
-            href = driver.find_element(By.XPATH, '//*[@id="header"]/nav/div[1]/div[1]/div[2]/div[1]/ul/li[3]/a')
-            href.click()
-            time.sleep(1)
-        except Exception as e:
-            logger.warning(f"Could not find bounce elements: {e}")
-
-    # Wait for a login form
-    Wait(driver, 30).until(EC.presence_of_element_located((By.ID, 'user_email')))
-
-    # Enter email
-    user = driver.find_element(By.ID, 'user_email')
-    user.clear()
-    user.send_keys(email)
-    time.sleep(1)
-
-    # Enter password
-    pw = driver.find_element(By.ID, 'user_password')
-    pw.clear()
-    pw.send_keys(password)
-    time.sleep(1)
-
-    # Click privacy checkbox
-    try:
-        box = driver.find_element(By.CLASS_NAME, 'icheckbox')
-        box.click()
-        time.sleep(1)
-    except Exception as e:
-        logger.warning(f"Could not find privacy checkbox: {e}")
-
-    # Submit login
-    logger.info(f"Submitting login for credentials. email: {email}")
-    btn = driver.find_element(By.NAME, 'commit')
-    btn.click()
-    time.sleep(3)
-
-    # Wait for login success indicator
-    Wait(driver, 60).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, ".button.primary.small"))
-    )
-
 
 def test_credentials(email: str, password: str) -> Dict[str, Optional[str]]:
     """
@@ -147,172 +93,8 @@ def test_credentials(email: str, password: str) -> Dict[str, Optional[str]]:
         if driver:
             try:
                 driver.quit()
-            except:
-                pass
-
-def __pick_available_date(dates: List[dict], applicant: dict) -> Optional[str]:
-    schedule_date = applicant.get('schedule_date')
-    min_date = applicant.get('min_date')
-    max_date = applicant.get('max_date')
-
-    # Normalize to YYYY-MM-DD strings from API
-    def in_range(d: str) -> bool:
-        if min_date and d < min_date:
-            return False
-        if max_date and d > max_date:
-            return False
-        return True
-
-    def earlier_than_schedule(d: str) -> bool:
-        if schedule_date:
-            return d < schedule_date
-        return True
-
-    for d in dates:
-        date_str = d.get('date')
-        if not date_str:
-            continue
-        if (min_date or max_date):
-            if in_range(date_str):
-                return date_str
-        else:
-            if earlier_than_schedule(date_str):
-                return date_str
-    return None
-
-def __copy_cookies(driver, session):
-    for c in driver.get_cookies():
-        session.cookies.set(c['name'], c['value'], domain=c.get('domain'), path=c.get('path', '/'))
-
-def perform_reschedule(driver, appointment_url: str, date_str: str, time_slot: str) -> bool:
-    driver.get(appointment_url)
-
-    data = {
-        "utf8": driver.find_element(By.NAME, 'utf8').get_attribute('value'),
-        "authenticity_token": driver.find_element(By.NAME, 'authenticity_token').get_attribute('value'),
-        "confirmed_limit_message": driver.find_element(By.NAME, 'confirmed_limit_message').get_attribute('value'),
-        "use_consulate_appointment_capacity": driver.find_element(By.NAME, 'use_consulate_appointment_capacity').get_attribute('value'),
-        "appointments[consulate_appointment][facility_id]": "108",
-        "appointments[consulate_appointment][date]": date_str,
-        "appointments[consulate_appointment][time]": time_slot,
-    }
-
-    # CSRF
-    try:
-        csrf_meta = driver.find_element(By.CSS_SELECTOR, 'meta[name="csrf-token"]').get_attribute('content')
-    except Exception as ex:
-        logger.warning(f"Could not find CSRF token: {ex}")
-        csrf_meta = data.get("authenticity_token")
-
-    session = requests.Session()
-    __copy_cookies(driver, session)
-    headers = {
-        "Accept": "application/json, text/javascript, */*; q=0.01",
-        "User-Agent": driver.execute_script("return navigator.userAgent;"),
-        "Referer": appointment_url,
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRF-Token": csrf_meta,
-    }
-    session.headers.update(headers)
-    r = session.post(appointment_url, data=data, allow_redirects=True)
-    if 'Successfully Scheduled' in r.text:
-        return True
-    return False
-
-def _visit_login(driver, main_url: str):
-    driver.get(main_url)
-    time.sleep(1)
-    try:
-        a = driver.find_element(By.XPATH, '//a[@class="down-arrow bounce"]')
-        a.click()
-        time.sleep(1)
-    except Exception:
-        pass
-    try:
-        href = driver.find_element(By.XPATH, '//*[@id="header"]/nav/div[1]/div[1]/div[2]/div[1]/ul/li[3]/a')
-        href.click()
-        time.sleep(1)
-    except Exception:
-        pass
-    Wait(driver, 60).until(EC.presence_of_element_located((By.NAME, "commit")))
-    try:
-        a = driver.find_element(By.XPATH, '//a[@class="down-arrow bounce"]')
-        a.click()
-        time.sleep(1)
-        logger.info("Logged in successfully")
-    except Exception:
-        pass
-
-def _do_login_action(driver, email: str, password: str):
-    user = driver.find_element(By.ID, 'user_email')
-    user.clear()
-    user.send_keys(email)
-    time.sleep(random.randint(1, 3))
-
-    pw = driver.find_element(By.ID, 'user_password')
-    pw.clear()
-    pw.send_keys(password)
-    time.sleep(random.randint(1, 3))
-
-    try:
-        box = driver.find_element(By.CLASS_NAME, 'icheckbox')
-        box.click()
-        time.sleep(random.randint(1, 3))
-    except Exception as ex:
-        logger.warning(f"Could not find privacy checkbox: {ex}")
-        pass
-
-    btn = driver.find_element(By.NAME, 'commit')
-    btn.click()
-    logger.info(f"Submitting login for credentials. email: {email}")
-    time.sleep(random.randint(1, 3))
-
-def copy_cookies_from_selenium_to_session(driver, session):
-    for c in driver.get_cookies():
-        session.cookies.set(c['name'], c['value'], domain=c.get('domain'), path=c.get('path', '/'))
-
-def get_date_via_requests_using_selenium_cookies(driver, appointment_url: str, date_url: str):
-    session = requests.Session()
-    copy_cookies_from_selenium_to_session(driver, session)
-
-    headers = {
-        "Accept": "application/json, text/javascript, */*; q=0.01",
-        "X-Requested-With": "XMLHttpRequest",
-        "Referer": appointment_url,
-        "User-Agent": driver.execute_script("return navigator.userAgent;")
-    }
-
-    r = session.get(date_url, headers=headers, allow_redirects=True, timeout=15)
-    print("status:", r.status_code)
-    print("text (start):", r.text[:200])
-
-    # intentar parsear JSON si viene JSON
-    try:
-        data = r.json()
-        print("JSON keys:", data.keys())
-        return data
-    except ValueError:
-        print("No devolvió JSON (posible HTML de error).")
-        return r.text
-
-def date_available_is_valid(min_date: DateTime, max_date: DateTime, date_available: DateTime) -> bool:
-    return min_date <= date_available <= max_date
-
-def get_available_date(dates, applicant: ApplicantBase):
-    global last_seen
-    print("getting available dates")
-    def is_earlier(date):
-        print("is_earlier")
-        return datetime.strptime(applicant.schedule_date, "%Y-%m-%d") > datetime.strptime(date, "%Y-%m-%d")
-
-    for d in dates:
-        date = d.get('date')
-        if is_earlier(date) and date != last_seen:
-            _, month, day = date.split('-')
-            if date_available_is_valid(DateTime(applicant.min_date), DateTime(applicant.max_date), d):
-                last_seen = date
-                return date
-    return None
+            except Exception as ex:
+                logger.warning("Could not quit Selenium driver", ex)
 
 def process_re_schedule(re_schedule_id: int):
     driver = None
@@ -320,7 +102,7 @@ def process_re_schedule(re_schedule_id: int):
         # Mark as PROCESSING and set the start time
         re_schedule_services.update_re_schedule(
             re_schedule_id,
-            ReScheduleUpdate(status=ScheduleStatus.PROCESSING, start_datetime=datetime.now())
+            ReScheduleUpdate(status=ScheduleStatus.PROCESSING)
         )
         logger.info(f"Processing re-schedule {re_schedule_id}")
 
@@ -347,64 +129,81 @@ def process_re_schedule(re_schedule_id: int):
         if not hub_address or not base_url:
             raise Exception("Selenium hub address missing")
 
-        main_url = base_url
         appointment_url = f"{base_url}/schedule/{schedule_number}/appointment"
         days_url = f"{base_url}/schedule/{schedule_number}/appointment/days/143.json?appointments[expedite]=false"
         times_url_tmpl = f"{base_url}/schedule/{schedule_number}/appointment/times/143.json?date=%s&appointments[expedite]=false"
 
         driver = get_driver()
+        login_url = f"{base_url}/users/sign_in"
+        __do_login(driver, login_url, email, password)
 
-        # Navigate and login
-        return password
-        _visit_login(driver, main_url)
-        _do_login_action(driver, email, password)
-
-        # Ensure logged in
-        print(driver.page_source)
         # TODO: add email or password invalid validation
-        Wait(driver, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".button.primary.small")))
+        Wait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".button.primary.small")))
 
-        # Get available dates via requests with Selenium cookies
-        dates = get_date_via_requests_using_selenium_cookies(driver, appointment_url, days_url)
-        logger.info(f"Dates available: {dates}")
-        return
-        if isinstance(dates, dict):
-            dates_list: List[dict] = dates.get('available_dates') or dates.get('dates') or []
-        elif isinstance(dates, list):
-            dates_list = dates
-        else:
-            dates_list = []
+        # Redirect to re-schedule page
+        driver.get(appointment_url)
+        if driver.find_elements(By.NAME, "confirmed_limit_message"):
+            Wait(driver, 2).until(EC.presence_of_element_located((By.NAME, 'confirmed_limit_message')))
+            driver.find_element(By.CSS_SELECTOR, '.icheckbox').click()
+            time.sleep(2)
+            driver.find_element(By.NAME, 'commit').click()
 
-        chosen_date = get_available_date(dates_list, applicant)
-        if not chosen_date:
-            logger.info(f"No suitable date found for re-schedule {re_schedule_id}")
-            # Keep job running; do not mark as failed
-            return
+        re_schuduel_completed = False
+        while datetime.strptime(str(rs.get('end_datetime')).replace("T", " "), "%Y-%m-%d %H:%M:%S") <= datetime.now() or not re_schuduel_completed:
+            time.sleep(config.sleep_time)
 
-        # Get time for chosen date
-        driver.get(times_url_tmpl % chosen_date)
-        content = driver.find_element(By.TAG_NAME, 'pre').text
-        data = json.loads(content) if content else {}
-        available_times = data.get("available_times") or []
-        if not available_times:
-            logger.info(f"No times available for date {chosen_date}")
-            return
-        time_slot = available_times[-1]
+            # Get available dates via requests with Selenium cookies
+            dates = __get_dates(driver, appointment_url, days_url)
+            if len(dates) == 0:
+                logger.info(f"No dates available for re-schedule {re_schedule_id}")
+                re_schedule_services.update_re_schedule(
+                    re_schedule_id,
+                    ReScheduleUpdate(status=ScheduleStatus.NOT_FOUND, end_datetime=datetime.now(), error="No dates available")
+                )
+                continue
+            
+            logger.info(f"Earlier date available: {dates[0]}")
+            if isinstance(dates, dict):
+                dates_list: List[dict] = dates.get('available_dates') or dates.get('dates') or []
+            elif isinstance(dates, list):
+                dates_list = dates
+            else:
+                dates_list = []
 
-        # Perform reschedule via POST with cookies
-        # rescheduled = _perform_reschedule(driver, appointment_url, chosen_date, time_slot)
+            chosen_date = __get_available_date(dates_list, applicant)
+            if not chosen_date:
+                logger.info(f"No suitable date found for re-schedule {re_schedule_id}")
+                re_schedule_services.update_re_schedule(
+                    re_schedule_id,
+                    ReScheduleUpdate(status=ScheduleStatus.NOT_FOUND, end_datetime=datetime.now(), error="No suitable date found")
+                )
+                continue
 
-        rescheduled = True
-        if rescheduled:
-            re_schedule_services.update_re_schedule(
-                re_schedule_id,
-                ReScheduleUpdate(status=ScheduleStatus.COMPLETED, end_datetime=datetime.now(), error=None)
-            )
-            # _send_push(f"Successfully Rescheduled to {chosen_date} at {time_slot}")
-            # _remove_job(re_schedule_id)
-        else:
-            # If POST failed, leave processing to retry later
-            logger.warning(f"Reschedule POST failed for {re_schedule_id}, will retry")
+            # Get time for chosen a date
+            available_times = __get_times(driver, appointment_url, times_url_tmpl % chosen_date)
+            if not available_times:
+                logger.info(f"No times available for date {chosen_date}")
+                re_schedule_services.update_re_schedule(
+                    re_schedule_id,
+                    ReScheduleUpdate(status=ScheduleStatus.NOT_FOUND, end_datetime=datetime.now(), error="No suitable time found")
+                )
+                continue
+            time_slot = available_times[-1]
+
+            # Perform reschedule via POST with cookies
+            rescheduled = __perform_reschedule(driver, appointment_url, chosen_date, time_slot)
+
+            if rescheduled:
+                re_schuduel_completed = True
+                re_schedule_services.update_re_schedule(
+                    re_schedule_id,
+                    ReScheduleUpdate(status=ScheduleStatus.COMPLETED, end_datetime=datetime.now(), error=None)
+                )
+                pushhover = PushHover()
+                pushhover.send_message(f"Successfully Rescheduled for {applicant.get('name')} {applicant.get('last_name')} on {chosen_date} at {time_slot}")
+            else:
+                # If POST failed, leave processing to retry later
+                logger.warning(f"Reschedule POST failed for {re_schedule_id}, will retry")
 
     except Exception as e:
         logger.error(f"Error processing re-schedule {re_schedule_id}: {e}", exc_info=True)
@@ -413,68 +212,147 @@ def process_re_schedule(re_schedule_id: int):
                 re_schedule_id,
                 ReScheduleUpdate(status=ScheduleStatus.FAILED, end_datetime=datetime.now(), error=str(e))
             )
-        except Exception:
-            pass
-        # _remove_job(re_schedule_id)
+        except Exception as ex:
+            logger.exception("Error updating re-schedule status", ex,  exc_info=True)
     finally:
         try:
             if driver:
                 driver.quit()
-        except Exception:
-            pass
+        except Exception as ex:
+            logger.warning("Could not quit Selenium driver", ex)
 
-def _perform_reschedule(driver, date, appointment_url: str, date_found, time_slot):
-    global EXIT
-    logger.info("Start Reschedule")
-
-    # Extrae valores del formulario (ya lo hacías)
+def __perform_reschedule(driver, appointment_url: str, date_str: str, time_slot: str) -> bool:
     data = {
         "utf8": driver.find_element(By.NAME, 'utf8').get_attribute('value'),
         "authenticity_token": driver.find_element(By.NAME, 'authenticity_token').get_attribute('value'),
         "confirmed_limit_message": driver.find_element(By.NAME, 'confirmed_limit_message').get_attribute('value'),
-        "use_consulate_appointment_capacity": driver.find_element(By.NAME,
-                                                                  'use_consulate_appointment_capacity').get_attribute(
-            'value'),
-        "appointments[consulate_appointment][facility_id]": "108",
-        "appointments[consulate_appointment][date]": date_found,
+        "use_consulate_appointment_capacity": driver.find_element(By.NAME, 'use_consulate_appointment_capacity').get_attribute('value'),
+        "appointments[consulate_appointment][facility_id]": "143", # Tegucigalpa
+        "appointments[consulate_appointment][date]": date_str,
         "appointments[consulate_appointment][time]": time_slot,
     }
 
-    # Extrae CSRF token (meta tag) si está presente
+    # CSRF
     try:
         csrf_meta = driver.find_element(By.CSS_SELECTOR, 'meta[name="csrf-token"]').get_attribute('content')
-    except:
-        csrf_meta = None
+    except Exception as ex:
+        logger.warning(f"Could not find CSRF token: {ex}")
+        csrf_meta = data.get("authenticity_token")
 
-    # Crear sesión requests y copiar cookies de Selenium
     session = requests.Session()
-    copy_cookies_from_selenium_to_session(driver, session)
-
-    # Construir headers; las cookies ya las maneja session
+    __copy_cookies(driver, session)
     headers = {
         "Accept": "application/json, text/javascript, */*; q=0.01",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36",
+        "User-Agent": driver.execute_script("return navigator.userAgent;"),
         "Referer": appointment_url,
         "X-Requested-With": "XMLHttpRequest",
+        "X-CSRF-Token": csrf_meta,
     }
-    # Añadir X-CSRF-Token si lo encontramos
-    if csrf_meta:
-        headers["X-CSRF-Token"] = csrf_meta
-    else:
-        # alternativa: intentar obtenerlo desde el input hidden (ya lo tienes en authenticity_token)
-        headers["X-CSRF-Token"] = data.get("authenticity_token")
-
     session.headers.update(headers)
-
-    # Hacer la petición POST
     r = session.post(appointment_url, data=data, allow_redirects=True)
+    if 'Successfully Scheduled' in r.text:
+        return True
+    return False
 
-    # Depuración opcional:
-    print("POST status:", r.status_code)
-    # print("Response headers:", r.headers)
-    # print("Response text:", r.text[:1000])
+def __do_login(driver, login_url, email: str, password: str):
+    logger.info(f"Testing credentials for {email}")
 
-    if r.text.find('Successfully Scheduled') != -1:
-        logger.info("Successfully Rescheduled")
-    else:
-        logger.info("ReScheduled Fail")
+    driver.get(login_url)
+    # Wait for a login form
+    Wait(driver, 5).until(EC.presence_of_element_located((By.ID, 'user_email')))
+
+    # Enter email
+    user = driver.find_element(By.ID, 'user_email')
+    user.clear()
+    user.send_keys(email)
+    time.sleep(1)
+
+    # Enter password
+    pw = driver.find_element(By.ID, 'user_password')
+    pw.clear()
+    pw.send_keys(password)
+    time.sleep(1)
+
+    # Click privacy checkbox
+    try:
+        box = driver.find_element(By.CLASS_NAME, 'icheckbox')
+        box.click()
+        time.sleep(1)
+    except Exception as e:
+        logger.warning(f"Could not find privacy checkbox: {e}")
+
+    # Submit login
+    logger.info(f"Submitting login for credentials. email: {email}")
+    btn = driver.find_element(By.NAME, 'commit')
+    btn.click()
+    time.sleep(3)
+
+    # Wait for login success indicator
+    Wait(driver, 60).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, ".button.primary.small"))
+    )
+
+def __copy_cookies(driver, session):
+    for c in driver.get_cookies():
+        session.cookies.set(c['name'], c['value'], domain=c.get('domain'), path=c.get('path', '/'))
+
+def __get_dates(driver, appointment_url: str, date_url: str):
+    session = requests.Session()
+    __copy_cookies(driver, session)
+
+    headers = {
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "X-Requested-With": "XMLHttpRequest",
+        "Referer": appointment_url,
+        "User-Agent": driver.execute_script("return navigator.userAgent;")
+    }
+
+    r = session.get(date_url, headers=headers, allow_redirects=True, timeout=15)
+    logger.info(f"status: {r.status_code}")
+    logger.info(f"text (start): {r.text[:200]}")
+
+    try:
+        data = r.json()
+        return data
+    except ValueError:
+        logger.warning("The request did not return JSON")
+        return r.text
+
+def __get_times(driver, appointment_url: str, time_url: str):
+    session = requests.Session()
+    __copy_cookies(driver, session)
+
+    headers = {
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "X-Requested-With": "XMLHttpRequest",
+        "Referer": appointment_url,
+        "User-Agent": driver.execute_script("return navigator.userAgent;")
+    }
+
+    r = session.get(time_url, headers=headers, allow_redirects=True, timeout=15)
+    logger.info(f"status: {r.status_code}")
+    logger.info(f"text (start): {r.text[:200]}")
+
+    try:
+        data = r.json()
+        available_times = data.get("available_times") or []
+        return available_times
+    except ValueError:
+        logger.warning("The request did not return JSON")
+        return r.text
+
+def __get_available_date(dates: List[dict], applicant: dict) :
+    min_date: datetime = datetime.strptime(applicant.get('min_date'), '%Y-%m-%d')
+    max_date: datetime = datetime.strptime(applicant.get('max_date'), '%Y-%m-%d')
+
+    if not min_date or not max_date:
+        logger.warning(f"Applicant {applicant.get('id')} missing date boundaries.")
+        return None
+
+    for d in dates:
+        current_date: datetime = datetime.strptime(d.get('date'), '%Y-%m-%d')
+
+        if current_date >= min_date and current_date <= max_date:
+            logger.info(f"Match found: {current_date}")
+            return current_date.strftime('%Y-%m-%d')
+    return None

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../contexts/useAuth';
+import Icon from '../assets/icon.png';
 import '../styles/auth.css';
 
 const Login: React.FC = () => {
@@ -65,7 +66,7 @@ const Login: React.FC = () => {
             <div className="auth-card">
                 <div className="auth-header">
                     <div className="auth-logo">
-                        <img src="/src/assets/QV_Icon-removebg.png" alt="NextVisa" />
+                        <img src={Icon} alt="NextVisa" />
                     </div>
                     <h1>Welcome Back</h1>
                     <p>Sign in to your NextVisa account</p>

@@ -52,7 +52,7 @@ app = FastAPI(
     version="0.0.1",
     docs_url="/docs",  # Swagger UI
     redoc_url="/redoc",  # ReDoc
-    #lifespan=lifespan
+    lifespan=lifespan
 )
 
 # Configure CORS
@@ -61,7 +61,6 @@ app.add_middleware(
     allow_origins=
     [
         "http://localhost:5173",
-        "http://localhost:3000", 
         "https://nextvisa.uf-technology.com"
     ], 
     allow_credentials=True,
