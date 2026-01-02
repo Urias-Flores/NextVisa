@@ -32,19 +32,9 @@
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
+  width: 85px;
+  height: 85px;
   object-fit: contain;
-}
-
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #ff5757, #4a90e2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
 }
 
 /* Sidebar Navigation */
@@ -190,12 +180,8 @@
   }
 
   .logo-icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .logo-text {
-    display: none;
+    width: 34px;
+    height: 34px;
   }
 
   .sidebar-nav {

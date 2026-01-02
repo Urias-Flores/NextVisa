@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faUsers, faSignOutAlt, faCalendarAlt, faCog } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../contexts/useAuth';
-import qvIcon from '../assets/QV Icon.png';
+import nvIcon from '../assets/icon.png';
 import '../styles/sidebar.css';
 
 interface SidebarProps {
@@ -53,8 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
         <aside className={`sidebar ${className}`}>
             <div className="sidebar-header">
                 <div className="sidebar-logo">
-                    <img src={qvIcon} alt="NextVisa Logo" className="logo-icon" />
-                    <span className="logo-text">NextVisa</span>
+                    <img src={nvIcon} alt="NextVisa Logo" className="logo-icon" />
                 </div>
             </div>
 
