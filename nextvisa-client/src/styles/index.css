@@ -13,10 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Brand colors - Red to Blue gradient */
-  --brand-red: #FF5757;
-  --brand-blue: #4A90E2;
-  --brand-primary: #FF5757;
-  --brand-gradient: linear-gradient(135deg, #FF5757 0%, #4A90E2 100%);
+  --red: #FF5757;
+  --blue: #4189cd;
+  --blue-hover: #2272bd;
+  --primary: #FF5757;
+  --gray: #718096;
+  --default-gradient: linear-gradient(135deg, #FF5757 0%, #4189cd 100%);
 }
 
 a {
@@ -144,3 +146,115 @@ button:focus-visible {
 .read-the-docs {
   color: #888;
 }
+
+/* ------------------------- Inputs ------------------------- */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group label svg {
+  color: var(--blue);
+  margin-right: .2rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.form-group input.error {
+    border-color: #fc8181;
+}
+
+.error-message {
+    background: #fef2f2;
+    color: var(--red);
+    padding: 0.40rem 0.55rem;
+    border-radius: 8px;
+    margin: .3rem 0 .5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+/* ------------------------- Inputs ------------------------- */
+
+/* ------------------------- Buttons ------------------------- */
+
+.btn {
+    background: var(--blue);
+    color: white;
+    padding: 0.7rem 1rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px -1px rgba(59, 130, 246, 0.2);
+    margin-top: 0.5rem;
+}
+
+.btn:focus {
+    outline: none;
+}
+
+.btn:hover {
+    background: var(--blue-hover);
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ------------------------- Buttons ------------------------- */
+

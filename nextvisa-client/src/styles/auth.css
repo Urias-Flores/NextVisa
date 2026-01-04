@@ -53,12 +53,12 @@
 .auth-header h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #4189cd;
+    color: var(--blue);
     margin-bottom: 0.5rem;
 }
 
 .auth-header p {
-    color: #718096;
+    color: var(--gray);
     font-size: 0.95rem;
 }
 
@@ -66,56 +66,6 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    margin-bottom: 0.7rem;
-}
-
-.form-group label {
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.form-group label svg {
-    color: #4A90E2;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 0.875rem 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    font-family: inherit;
-    box-sizing: border-box;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: #4A90E2;
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
-}
-
-.form-group input.error {
-    border-color: #fc8181;
-}
-
-.error-message {
-    color: #e53e3e;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-top: 0.25rem;
 }
 
 .auth-error {
@@ -140,52 +90,6 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-.submit-btn {
-    background: #4189cd;
-    color: white;
-    padding: 1rem;
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(255, 87, 87, 0.4);
-    margin-top: 0.5rem;
-}
-
-.submit-btn:focus {
-    outline: none;
-}
-
-.submit-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
-}
-
-.submit-btn:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.submit-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.submit-btn svg {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 .auth-footer {
@@ -213,6 +117,7 @@
 @media (max-width: 480px) {
     .auth-card {
         padding: 2rem 1.5rem;
+        margin: 0 .6rem;
     }
 
     .auth-header h1 {
