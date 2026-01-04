@@ -36,7 +36,13 @@ def test_credentials(email: str, password: str) -> Dict[str, Optional[str]]:
         driver = get_driver()
         
         # Attempt login
-        __do_login(driver, email, password)
+        config = configuration_services.get_configuration()
+        
+        if not config or not config.base_url:
+            raise Exception("Configuration missing base URL")
+
+        login_url = f"{config.base_url}/users/sign_in"
+        __do_login(driver, login_url, email, password)
         
         logger.info("Login successful for credentials - extracting schedule number")
 
