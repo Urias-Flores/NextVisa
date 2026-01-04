@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/sidebar';
 import Dashboard from './pages/dashboard';
 import Applicants from './pages/applicants';
 import ApplicantDetails from './pages/applicantDetails';
