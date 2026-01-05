@@ -4,10 +4,12 @@ import { faChartLine, faUsers, faFileAlt, faClock } from '@fortawesome/free-soli
 
 const Dashboard: React.FC = () => {
     return (
-        <div className="dashboard-container">
-            <div className="dashboard-header">
-                <h1>Dashboard</h1>
-                <p>Welcome to NextVisa - Your visa application management system</p>
+        <div className="container">
+            <div className="header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Welcome to NextVisa - Your visa application management system</p>
+                </div>
             </div>
 
             <div className="stats-grid">

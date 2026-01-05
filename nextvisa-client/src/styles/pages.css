@@ -1,26 +1,31 @@
 /* Page Styles - Compact Design */
 
-/* Dashboard Styles */
-.dashboard-container {
+.container {
     padding: 0;
 }
 
-.dashboard-header {
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.dashboard-header h1 {
+.header h1 {
     margin-bottom: 0.25rem;
     color: #1e293b;
     font-size: 1.5rem;
 }
 
-.dashboard-header p {
+.header p {
     color: #64748b;
     font-size: 0.95rem;
     margin: 0;
 }
 
+/* Dashboard Styles */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -102,31 +107,6 @@
 }
 
 /* Applicants Styles */
-.applicants-container {
-    padding: 0;
-}
-
-.applicants-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.applicants-header h1 {
-    margin-bottom: 0.25rem;
-    color: #1e293b;
-    font-size: 1.5rem;
-}
-
-.applicants-header p {
-    color: #64748b;
-    font-size: 0.95rem;
-    margin: 0;
-}
-
 .add-btn {
     background: #4189cd;
     color: #ffffff;
@@ -171,7 +151,6 @@
 
 .search-bar {
     position: relative;
-    margin-bottom: 1.5rem;
 }
 
 .search-icon {
@@ -616,11 +595,16 @@ textarea.form-input {
     gap: 0.5rem;
     font-size: 0.9rem;
     margin-bottom: 1rem;
-    padding: 0;
+    padding: .3rem .5rem;
 }
 
 .back-link:hover {
-    color: #3b82f6;
+    border-radius: 999px;
+    box-shadow: none;
+    background: #64748b !important;
+    color: white !important;
+    transition: all 0.2s;
+    transform: translateY(0px) !important;
 }
 
 .header-content {
@@ -748,32 +732,6 @@ textarea.form-input {
     font-size: 1.1rem;
 }
 
-.add-btn-small {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s;
-}
-
-.add-btn-small:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-}
-
-.add-btn-small:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-}
-
 .re-schedules-list {
     display: flex;
     flex-direction: column;
@@ -895,4 +853,21 @@ textarea.form-input {
 .empty-icon-small {
     font-size: 2rem;
     color: #cbd5e1;
+}
+
+.page-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.7rem;
+}
+
+.filters, .actions {
+    display: flex;
+    gap: 0.7rem;
 }
