@@ -13,8 +13,9 @@ from selenium.webdriver.support.ui import WebDriverWait as Wait
 from selenium.webdriver.common.by import By
 from lib.webdriver import get_driver, get_main_url
 from models.applicant import ApplicantBase
-from services import re_schedule_services, applicant_services, configuration_services
+from services import re_schedule_services, applicant_services, configuration_services, re_schedule_log
 from models.re_schedule import ReScheduleUpdate, ScheduleStatus
+from models.re_schedule_log import ReScheduleLogCreate, LogState
 from lib import security
 from lib.pushhover import PushHover
 
@@ -141,12 +142,15 @@ def process_re_schedule(re_schedule_id: int):
 
         driver = get_driver()
         login_url = f"{base_url}/users/sign_in"
+        log_re_schedule(re_schedule_id, "Trying to login in platform", LogState.INFO)
         __do_login(driver, login_url, email, password)
+        log_re_schedule(re_schedule_id, "Login successful", LogState.INFO)
 
         # TODO: add email or password invalid validation
         Wait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".button.primary.small")))
 
         # Redirect to re-schedule page
+        log_re_schedule(re_schedule_id, "Redirecting to re-schedule page", LogState.INFO)
         driver.get(appointment_url)
         if driver.find_elements(By.NAME, "confirmed_limit_message"):
             Wait(driver, 2).until(EC.presence_of_element_located((By.NAME, 'confirmed_limit_message')))
@@ -154,8 +158,9 @@ def process_re_schedule(re_schedule_id: int):
             time.sleep(2)
             driver.find_element(By.NAME, 'commit').click()
 
-        re_schuduel_completed = False
-        while datetime.strptime(str(rs.get('end_datetime')).replace("T", " "), "%Y-%m-%d %H:%M:%S") <= datetime.now() or not re_schuduel_completed:
+        re_schudule_completed = False
+        log_re_schedule(re_schedule_id, "Redirecting to re-schedule page", LogState.INFO)
+        while datetime.strptime(str(rs.get('end_datetime')).replace("T", " "), "%Y-%m-%d %H:%M:%S") <= datetime.now() or not re_schudule_completed:
             time.sleep(config.sleep_time)
 
             # Get available dates via requests with Selenium cookies
@@ -166,9 +171,11 @@ def process_re_schedule(re_schedule_id: int):
                     re_schedule_id,
                     ReScheduleUpdate(status=ScheduleStatus.NOT_FOUND, end_datetime=datetime.now(), error="No dates available")
                 )
+                log_re_schedule(re_schedule_id, "No dates available", LogState.ERROR)
                 continue
             
             logger.info(f"Earlier date available: {dates[0]}")
+            log_re_schedule(re_schedule_id, f"Earlier date available: {dates[0]}", LogState.INFO)
             if isinstance(dates, dict):
                 dates_list: List[dict] = dates.get('available_dates') or dates.get('dates') or []
             elif isinstance(dates, list):
@@ -183,6 +190,7 @@ def process_re_schedule(re_schedule_id: int):
                     re_schedule_id,
                     ReScheduleUpdate(status=ScheduleStatus.NOT_FOUND, end_datetime=datetime.now(), error="No suitable date found")
                 )
+                log_re_schedule(re_schedule_id, "No suitable date found.", LogState.ERROR)
                 continue
 
             # Get time for chosen a date
@@ -193,11 +201,14 @@ def process_re_schedule(re_schedule_id: int):
                     re_schedule_id,
                     ReScheduleUpdate(status=ScheduleStatus.NOT_FOUND, end_datetime=datetime.now(), error="No suitable time found")
                 )
+                log_re_schedule(re_schedule_id, "No suitable time found.", LogState.ERROR)
                 continue
             time_slot = available_times[-1]
 
             # Perform reschedule via POST with cookies
+            log_re_schedule(re_schedule_id, "Performing reschedule. A date and time has been selected.", LogState.INFO)
             rescheduled = __perform_reschedule(driver, appointment_url, chosen_date, time_slot)
+            log_re_schedule(re_schedule_id, f"Reschedule performed. result: {rescheduled}", LogState.INFO)
 
             if rescheduled:
                 re_schuduel_completed = True
@@ -321,6 +332,7 @@ def __get_dates(driver, appointment_url: str, date_url: str):
         data = r.json()
         return data
     except ValueError:
+        log_re_schedule(re_schedule_id, f"The request did not return JSON. status: {r.status_code}", LogState.ERROR)
         logger.warning("The request did not return JSON")
         return r.text
 
@@ -344,6 +356,7 @@ def __get_times(driver, appointment_url: str, time_url: str):
         available_times = data.get("available_times") or []
         return available_times
     except ValueError:
+        log_re_schedule(re_schedule_id, f"The request did not return JSON. status: {r.status_code}", LogState.ERROR)
         logger.warning("The request did not return JSON")
         return r.text
 
@@ -352,6 +365,7 @@ def __get_available_date(dates: List[dict], applicant: dict) :
     max_date: datetime = datetime.strptime(applicant.get('max_date'), '%Y-%m-%d')
 
     if not min_date or not max_date:
+        log_re_schedule(re_schedule_id, "Applicant missing date boundaries.", LogState.ERROR)
         logger.warning(f"Applicant {applicant.get('id')} missing date boundaries.")
         return None
 
@@ -362,3 +376,10 @@ def __get_available_date(dates: List[dict], applicant: dict) :
             logger.info(f"Match found: {current_date}")
             return current_date.strftime('%Y-%m-%d')
     return None
+
+def log_re_schedule(re_schedule_id: int, content: str, state: LogState):
+    try:
+        re_schedule_log.create_re_schedule_log(ReScheduleLogCreate(re_schedule=re_schedule_id, state=state, content=content))
+    except Exception as e:
+        # Don't call log_re_schedule here to avoid infinite recursion
+        logger.error(f"Error logging re-schedule: {e}")

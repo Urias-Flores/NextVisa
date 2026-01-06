@@ -92,6 +92,10 @@ const ApplicantDetails: React.FC = () => {
         return (
           <FontAwesomeIcon icon={faClock} className="status-icon pending" />
         );
+      case ScheduleStatus.SCHEDULED:
+        return (
+          <FontAwesomeIcon icon={faClock} className="status-icon pending" />
+        );
       case ScheduleStatus.FAILED:
         return (
           <FontAwesomeIcon
@@ -200,60 +204,60 @@ const ApplicantDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="details-grid">
-        <div className="info-card">
+      <div className="details-grid-d">
+        <div className="info-card-d">
           <h3>Applicant Information</h3>
-          <div className="info-list">
-            <div className="info-item">
-              <div className="info-label">
+          <div className="info-list-d">
+            <div className="info-item-d">
+              <div className="info-label-d">
                 <FontAwesomeIcon icon={faEnvelope} />
                 <span>Email</span>
               </div>
-              <div className="info-value">{applicant.email}</div>
+              <div className="info-value-d">{applicant.email}</div>
             </div>
-            <div className="info-item">
-              <div className="info-label">
+            <div className="info-item-d">
+              <div className="info-label-d">
                 <FontAwesomeIcon icon={faCalendar} />
                 <span>Schedule Date</span>
               </div>
-              <div className="info-value">
+              <div className="info-value-d">
                 {formatDateOnly(applicant.schedule_date) || "Not Scheduled"}
               </div>
             </div>
 
-            <div className="info-item">
-              <div className="info-label">
+            <div className="info-item-d">
+              <div className="info-label-d">
                 <FontAwesomeIcon icon={faCalendar} />
                 <span>Min - Max date re-schedule</span>
               </div>
-              <div className="info-value">
+              <div className="info-value-d">
                 {formatDateOnly(applicant.min_date) || "Not Scheduled"} -{" "}
                 {formatDateOnly(applicant.max_date) || "Not Scheduled"}
               </div>
             </div>
 
-            <div className="info-item">
-              <div className="info-label">
+            <div className="info-item-d">
+              <div className="info-label-d">
                 <FontAwesomeIcon icon={faArrowCircleUp} />
                 <span>Status</span>
               </div>
-              <div className="info-value">{applicant.re_schedule_status}</div>
+              <div className="info-value-d">{applicant.re_schedule_status}</div>
             </div>
-            <div className="info-item">
-              <div className="info-label">
+            <div className="info-item-d">
+              <div className="info-label-d">
                 <FontAwesomeIcon icon={faArrowCircleUp} />
                 <span>Schedule Number</span>
               </div>
-              <div className="info-value">
+              <div className="info-value-d">
                 {applicant.schedule || "No Schedule number"}
               </div>
             </div>
-            <div className="info-item">
-              <div className="info-label">
+            <div className="info-item-d">
+              <div className="info-label-d">
                 <FontAwesomeIcon icon={faClock} />
                 <span>Updated At</span>
               </div>
-              <div className="info-value">
+              <div className="info-value-d">
                 {formatDate(applicant.updated_at)}
               </div>
             </div>
@@ -296,7 +300,7 @@ const ApplicantDetails: React.FC = () => {
                       className={`status-badge ${item.status.toLowerCase()}`}
                     >
                       {getStatusIcon(item.status)}
-                      <span>{item.status}</span>
+                      <span>{item.status.replace("_", " ")}</span>
                     </div>
                     <span className="re-schedule-date">
                       {formatDate(item.created_at)}
@@ -321,6 +325,19 @@ const ApplicantDetails: React.FC = () => {
                       <div className="error-alert">
                         <strong>Error:</strong> {item.error}
                       </div>
+                    )}
+                    {(item.status === ScheduleStatus.PROCESSING ||
+                      item.status === ScheduleStatus.COMPLETED ||
+                      item.status === ScheduleStatus.FAILED ||
+                      item.status === ScheduleStatus.NOT_FOUND) && (
+                      <button
+                        className="btn-view-logs"
+                        onClick={() =>
+                          navigate(`/re-schedules/${item.id}/logs`)
+                        }
+                      >
+                        View Logs
+                      </button>
                     )}
                   </div>
                 </div>

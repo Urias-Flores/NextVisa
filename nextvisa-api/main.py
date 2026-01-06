@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from controllers.configuration_controller import router as configuration_router
 from controllers.applicant_controller import router as applicant_router
 from controllers.re_schedule_controller import router as re_schedule_router
+from controllers.re_schedule_log_controller import router as re_schedule_log_router
 from lib.state_machine import state_machine
 
 logger = logging.getLogger(__name__)
@@ -86,3 +87,4 @@ def get_status():
 app.include_router(configuration_router, prefix="/api/configuration", tags=["configuration"])
 app.include_router(applicant_router, prefix="/api/applicants", tags=["applicants"])
 app.include_router(re_schedule_router, prefix="/api/re-schedules", tags=["re-schedules"])
+app.include_router(re_schedule_log_router)

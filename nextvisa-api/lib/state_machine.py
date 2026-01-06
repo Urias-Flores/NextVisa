@@ -5,7 +5,7 @@ from typing import Dict, Optional
 from threading import Lock
 from apscheduler.schedulers.background import BackgroundScheduler
 from services import re_schedule_services, applicant_services, configuration_services, applicant_web_services
-from models.re_schedule import ScheduleStatus
+from models.re_schedule import ScheduleStatus, ReScheduleUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +64,6 @@ class StateMachine:
                     return
 
                 with self.lock:
-                    if schedule_id in self.jobs:
-                        return
-
                     job = self.scheduler.add_job(
                         applicant_web_services.process_re_schedule, 
                         'date', 
@@ -75,8 +72,12 @@ class StateMachine:
                         id=f"rs_{schedule_id}"
                     )
                     
-                    self.jobs[schedule_id] = job.id
                     logger.info(f"Scheduled one-time job for re-schedule {schedule_id} at {run_at}")
+                    re_schedule_services.update_re_schedule(
+                        schedule_id,
+                        ReScheduleUpdate(status=ScheduleStatus.SCHEDULED)
+                    )
+                    logger.info(f"Updated re-schedule {schedule_id} status to SCHEDULED")
 
         except Exception as e:
             logger.error(f"Error scanning pending re-schedules: {e}", exc_info=True)

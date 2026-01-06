@@ -4,7 +4,8 @@ export const ScheduleStatus = {
     COMPLETED: 'COMPLETED',
     FAILED: 'FAILED',
     NOT_FOUND: 'NOT_FOUND',
-    LOGIN_PENDING: 'LOGIN_PENDING'
+    LOGIN_PENDING: 'LOGIN_PENDING',
+    SCHEDULED: 'SCHEDULED'
 } as const;
 
 export type ScheduleStatus = typeof ScheduleStatus[keyof typeof ScheduleStatus];
