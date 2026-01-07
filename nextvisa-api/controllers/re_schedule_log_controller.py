@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from services import re_schedule_log
+from services import re_schedule_log_services
 from typing import List
 from models.re_schedule_log import ReScheduleLogResponse
 import logging
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/re-schedule-logs", tags=["re-schedule-logs"])
 async def get_logs_by_re_schedule(re_schedule_id: int):
     """Get all logs for a specific re-schedule process"""
     try:
-        logs = re_schedule_log.get_re_schedule_log_by_re_schedule_id(re_schedule_id)
+        logs = re_schedule_log_services.get_re_schedule_log_by_re_schedule_id(re_schedule_id)
         return logs
     except Exception as e:
         logger.error(f"Error fetching re-schedule logs: {e}")

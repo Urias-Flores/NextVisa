@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getReScheduleLogsByReScheduleId } from '../services/api/reScheduleLogs';
+import { getReScheduleLogsByReScheduleId } from '../services/reScheduleLogs';
 import type { ReScheduleLog } from '../types/reScheduleLog';
 
 export const useReScheduleLogs = (reScheduleId: number) => {
