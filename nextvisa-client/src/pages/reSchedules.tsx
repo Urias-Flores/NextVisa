@@ -15,6 +15,7 @@ import {
 import { useReSchedules } from "../hooks/useReSchedules";
 import { useApplicants } from "../hooks/useApplicants";
 import { ScheduleStatus } from "../types/reSchedule";
+import "../styles/pages/re-schedules.css";
 
 const ReSchedules: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -161,7 +162,7 @@ const ReSchedules: React.FC = () => {
         </div>
       </div>
 
-      <div className="applicants-content">
+      <div className="content">
         {isLoading ? (
           <div className="loading-state">
             <FontAwesomeIcon icon={faSpinner} className="spinner" spin />
@@ -183,8 +184,8 @@ const ReSchedules: React.FC = () => {
             <p>Try adjusting your filters or check back later.</p>
           </div>
         ) : (
-          <div className="applicants-table-container">
-            <table className="applicants-table">
+          <div className="table-container">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Applicant</th>
@@ -199,7 +200,7 @@ const ReSchedules: React.FC = () => {
                 {filteredReSchedules.map((item) => (
                   <tr key={item.id}>
                     <td>
-                      <div className="applicant-name">
+                      <div className="table-name">
                         {getApplicantName(item.applicant)}
                       </div>
                     </td>
@@ -232,34 +233,6 @@ const ReSchedules: React.FC = () => {
           </div>
         )}
       </div>
-
-      <style>{`
-                .filter-group {
-                    display: flex;
-                    align-items: center;
-                    position: relative;
-                }
-                .status-badge {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.25rem 0.75rem;
-                    border-radius: 999px;
-                    font-size: 0.85rem;
-                    font-weight: 500;
-                    width: fit-content;
-                }
-                .status-badge.completed { background: #dcfce7; color: #166534; }
-                .status-badge.processing { background: #dbeafe; color: #1e40af; }
-                .status-badge.pending { background: #fef9c3; color: #854d0e; }
-                .status-badge.failed { background: #fee2e2; color: #991b1b; }
-                .status-badge.not_found { background: #f3f4f6; color: #374151; }
-                
-                .error-text {
-                    color: #ef4444;
-                    font-size: 0.9rem;
-                }
-            `}</style>
     </div>
   );
 };

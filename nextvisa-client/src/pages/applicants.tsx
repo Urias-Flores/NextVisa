@@ -130,7 +130,7 @@ const Applicants: React.FC = () => {
         </div>
       </div>
 
-      <div className="applicants-content">
+      <div className="content">
         {isLoading ? (
           <div className="loading-state">
             <FontAwesomeIcon icon={faSpinner} className="spinner" spin />
@@ -165,8 +165,8 @@ const Applicants: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="applicants-table-container">
-            <table className="applicants-table">
+          <div className="table-container">
+            <table className="table">
               <thead className="table-header">
                 <tr>
                   <th>Name</th>
@@ -180,18 +180,18 @@ const Applicants: React.FC = () => {
                 {filteredApplicants.map((applicant) => (
                   <tr key={applicant.id}>
                     <td>
-                      <div className="applicant-name">
+                      <div className="table-name">
                         {applicant.name} {applicant.last_name}
                       </div>
                     </td>
                     <td>
-                      <div className="applicant-email">
+                      <div className="table-email">
                         <FontAwesomeIcon icon={faEnvelope} />
                         <span>{applicant.email}</span>
                       </div>
                     </td>
                     <td>
-                      <div className="applicant-date">
+                      <div className="table-date">
                         <FontAwesomeIcon icon={faCalendar} />
                         <span>
                           {applicant.schedule_date || "Not scheduled"}
@@ -202,13 +202,13 @@ const Applicants: React.FC = () => {
                     <td>
                       <div className="table-actions">
                         <button
-                          className="action-btn edit"
+                          className="btn"
                           onClick={() => handleEdit(applicant)}
                         >
                           Edit
                         </button>
                         <button
-                          className="action-btn view"
+                          className="btn"
                           onClick={() =>
                             navigate(`/applicants/${applicant.id}`)
                           }
@@ -216,7 +216,7 @@ const Applicants: React.FC = () => {
                           View
                         </button>
                         <button
-                          className="action-btn"
+                          className="btn btn-danger"
                           onClick={() => handleDelete(applicant.id)}
                         >
                           Delete

@@ -25,6 +25,7 @@ import AddReScheduleModal from "../components/AddReScheduleModal";
 import AddApplicantModal from "../components/AddApplicantModal";
 import { ScheduleStatus } from "../types/reSchedule";
 import { formatDate, formatDateOnly } from "../utils/dateFormatter";
+import "../styles/pages/applicants.css";
 
 const ApplicantDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -331,7 +332,7 @@ const ApplicantDetails: React.FC = () => {
                       item.status === ScheduleStatus.FAILED ||
                       item.status === ScheduleStatus.NOT_FOUND) && (
                       <button
-                        className="btn-view-logs"
+                        className="btn btn-small"
                         onClick={() =>
                           navigate(`/re-schedules/${item.id}/logs`)
                         }
