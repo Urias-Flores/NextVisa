@@ -466,6 +466,15 @@
     font-size: 0.85rem;
 }
 
+.form-group textarea {
+    resize: vertical;
+    min-height: 55px;
+    font-family: inherit;
+    width: calc(100% - 1.7rem);
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+}
+
 .input-wrapper {
     position: relative;
 }

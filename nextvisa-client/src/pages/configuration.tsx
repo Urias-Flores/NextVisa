@@ -311,8 +311,8 @@ const Configuration: React.FC = () => {
   }
 
   return (
-    <div className="configuration-container">
-      <div className="configuration-header">
+    <div className="container">
+      <div className="header">
         <div>
           <h1>Configuration</h1>
           <p>Manage application settings for the re-scheduler</p>
