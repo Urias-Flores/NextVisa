@@ -21,8 +21,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useApplicant, useTestCredentials } from "../hooks/useApplicants";
 import { useReSchedulesByApplicant } from "../hooks/useReSchedules";
-import AddReScheduleModal from "../components/AddReScheduleModal";
-import AddApplicantModal from "../components/AddApplicantModal";
+import ReScheduleModal from "../components/ReScheduleModal";
+import ApplicantModal from "../components/ApplicantModal";
 import { ScheduleStatus } from "../types/reSchedule";
 import { formatDate, formatDateOnly } from "../utils/dateFormatter";
 import "../styles/pages/applicants.css";
@@ -157,7 +157,7 @@ const ApplicantDetails: React.FC = () => {
   }
 
   return (
-    <div className="applicant-details-container">
+    <div className="details-container">
       <div className="details-header">
         <button className="back-link" onClick={() => navigate("/applicants")}>
           <FontAwesomeIcon icon={faArrowLeft} />
@@ -205,60 +205,60 @@ const ApplicantDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="details-grid-d">
-        <div className="info-card-d">
+      <div className="applicants-details-grid">
+        <div className="info-card">
           <h3>Applicant Information</h3>
-          <div className="info-list-d">
-            <div className="info-item-d">
-              <div className="info-label-d">
+          <div className="info-list">
+            <div className="info-item">
+              <div className="info-label">
                 <FontAwesomeIcon icon={faEnvelope} />
                 <span>Email</span>
               </div>
-              <div className="info-value-d">{applicant.email}</div>
+              <div className="info-value">{applicant.email}</div>
             </div>
-            <div className="info-item-d">
-              <div className="info-label-d">
+            <div className="info-item">
+              <div className="info-label">
                 <FontAwesomeIcon icon={faCalendar} />
                 <span>Schedule Date</span>
               </div>
-              <div className="info-value-d">
+              <div className="info-value">
                 {formatDateOnly(applicant.schedule_date) || "Not Scheduled"}
               </div>
             </div>
 
-            <div className="info-item-d">
-              <div className="info-label-d">
+            <div className="info-item">
+              <div className="info-label">
                 <FontAwesomeIcon icon={faCalendar} />
                 <span>Min - Max date re-schedule</span>
               </div>
-              <div className="info-value-d">
+              <div className="info-value">
                 {formatDateOnly(applicant.min_date) || "Not Scheduled"} -{" "}
                 {formatDateOnly(applicant.max_date) || "Not Scheduled"}
               </div>
             </div>
 
-            <div className="info-item-d">
-              <div className="info-label-d">
+            <div className="info-item">
+              <div className="info-label">
                 <FontAwesomeIcon icon={faArrowCircleUp} />
                 <span>Status</span>
               </div>
-              <div className="info-value-d">{applicant.re_schedule_status}</div>
+              <div className="info-value">{applicant.re_schedule_status}</div>
             </div>
-            <div className="info-item-d">
-              <div className="info-label-d">
+            <div className="info-item">
+              <div className="info-label">
                 <FontAwesomeIcon icon={faArrowCircleUp} />
                 <span>Schedule Number</span>
               </div>
-              <div className="info-value-d">
+              <div className="info-value">
                 {applicant.schedule || "No Schedule number"}
               </div>
             </div>
-            <div className="info-item-d">
-              <div className="info-label-d">
+            <div className="info-item">
+              <div className="info-label">
                 <FontAwesomeIcon icon={faClock} />
                 <span>Updated At</span>
               </div>
-              <div className="info-value-d">
+              <div className="info-value">
                 {formatDate(applicant.updated_at)}
               </div>
             </div>
@@ -348,13 +348,13 @@ const ApplicantDetails: React.FC = () => {
         </div>
       </div>
 
-      <AddReScheduleModal
+      <ReScheduleModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         applicantId={applicantId}
       />
 
-      <AddApplicantModal
+      <ApplicantModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         applicant={applicant}

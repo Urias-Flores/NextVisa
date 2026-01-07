@@ -19,9 +19,7 @@ import Configuration from "./pages/configuration";
 import Login from "./pages/login";
 import "./styles/index.css";
 import "./styles/sidebar.css";
-import "./styles/pages.css";
 import "./styles/modal.css";
-import "./styles/auth.css";
 
 // Create a client
 const queryClient = new QueryClient();

@@ -121,6 +121,10 @@
   transition: all 0.2s ease;
 }
 
+.modal-close-btn:focus {
+  outline: none;
+}
+
 .modal-close-btn:hover {
   box-shadow: none;
 }

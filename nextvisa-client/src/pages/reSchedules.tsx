@@ -11,6 +11,7 @@ import {
   faTimesCircle,
   faQuestionCircle,
   faCalendarPlus,
+  faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useReSchedules } from "../hooks/useReSchedules";
 import { useApplicants } from "../hooks/useApplicants";
@@ -170,7 +171,10 @@ const ReSchedules: React.FC = () => {
           </div>
         ) : isError ? (
           <div className="error-state">
-            <div className="error-icon">⚠️</div>
+            <FontAwesomeIcon
+              icon={faExclamationCircle}
+              className="error-icon"
+            />
             <h3>Error Loading Data</h3>
             <p>{(error as Error)?.message || "Failed to load re-schedules."}</p>
             <button className="retry-btn" onClick={() => refetch()}>

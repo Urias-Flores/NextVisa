@@ -13,23 +13,13 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Brand colors - Red to Blue gradient */
-  --red: #ff5757;
+  --red: #f53146;
   --red-hover: #c23232;
   --blue: #4189cd;
   --blue-hover: #2272bd;
   --primary: #ff5757;
   --gray: #718096;
   --default-gradient: linear-gradient(135deg, #ff5757 0%, #4189cd 100%);
-}
-
-a {
-  font-weight: 500;
-  color: #5a5aa6;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #ff5757;
 }
 
 body {
@@ -45,32 +35,6 @@ h1 {
   line-height: 1.1;
   color: #1e293b;
 }
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #5a5aa6;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-
-button:hover {
-  background-color: #4a4a96;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(90, 90, 166, 0.3);
-}
-
-button:focus,
-button:focus-visible {
-  outline: 2px solid #5a5aa6;
-  outline-offset: 2px;
-}
-
 /* Light theme is now the default */
 
 #root {
@@ -104,6 +68,12 @@ button:focus-visible {
 
 .container {
   padding: 0;
+}
+
+.details-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .content {
@@ -174,12 +144,28 @@ button:focus-visible {
   }
 }
 
-.card {
-  padding: 2em;
+.spinner {
+  font-size: 2.5rem;
+  color: #4a90e2;
+  margin-bottom: 1rem;
 }
 
-.read-the-docs {
-  color: #888;
+.page-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.filters,
+.actions {
+  display: flex;
+  gap: 0.7rem;
 }
 
 /* ------------------------- Empty State Page ------------------------- */
@@ -267,6 +253,26 @@ button:focus-visible {
 
 /* ------------------------- Error State Page ------------------------- */
 
+/* ------------------------- State Small Page ------------------------- */
+
+.loading-state-small,
+.empty-state-small {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+  gap: 0.75rem;
+}
+
+.empty-icon-small {
+  font-size: 2rem;
+  color: #cbd5e1;
+}
+
+/* ------------------------- State Small Page ------------------------- */
+
 /* ------------------------- Inputs ------------------------- */
 
 .form-group {
@@ -291,7 +297,8 @@ button:focus-visible {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 0.875rem 1rem;
   border: 2px solid #e2e8f0;
@@ -303,14 +310,16 @@ button:focus-visible {
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: #4a90e2;
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
 }
 
 .form-group input.error,
-.form-group select.error {
+.form-group select.error,
+.form-group textarea.error {
   border-color: #fc8181;
 }
 

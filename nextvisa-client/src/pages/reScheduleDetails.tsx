@@ -15,7 +15,6 @@ import { useReSchedule } from "../hooks/useReSchedules";
 import { useApplicant } from "../hooks/useApplicants";
 import { LogState } from "../types/reScheduleLog";
 import { formatDate } from "../utils/dateFormatter";
-import "../styles/pages.css";
 
 const ReScheduleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,16 +85,16 @@ const ReScheduleDetails: React.FC = () => {
   }
 
   return (
-    <div className="re-schedule-details-container">
+    <div className="details-container">
       <div className="page-header">
-        <button onClick={() => navigate(-1)} className="back-button">
+        <button onClick={() => navigate(-1)} className="back-link">
           <FontAwesomeIcon icon={faArrowLeft} />
-          <span>Back</span>
+          <span>Back to Details</span>
         </button>
         <h1>Re-Schedule Process Details</h1>
       </div>
 
-      <div className="details-grid">
+      <div className="re-schedules-details-grid">
         {/* Re-Schedule Information */}
         <div className="info-card">
           <h2>Re-Schedule Information</h2>

@@ -1,6 +1,10 @@
+.details-header {
+  margin-bottom: 2rem;
+}
+
 .avatar-placeholder {
-  width: 64px;
-  height: 64px;
+  width: 75px;
+  height: 75px;
   background: #3b82f6;
   border-radius: 50%;
   display: flex;
@@ -10,6 +14,20 @@
   font-size: 1.5rem;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.applicant-title {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .applicant-title h1 {
@@ -27,14 +45,14 @@
   border-radius: 4px;
 }
 
-.details-grid-d {
+.applicants-details-grid {
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 2rem;
 }
 
 @media (max-width: 1024px) {
-  .details-grid {
+  .applicants-details-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -45,7 +63,7 @@
   margin: 0 auto;
 }
 
-.info-card-d {
+.info-card {
   background: white;
   border-radius: 16px;
   padding: 1.5rem;
@@ -54,7 +72,7 @@
   height: fit-content;
 }
 
-.info-card-d h3 {
+.info-card h3 {
   margin: 0 0 1.5rem 0;
   color: #1e293b;
   font-size: 1.1rem;
@@ -62,19 +80,19 @@
   padding-bottom: 1rem;
 }
 
-.info-list-d {
+.info-list {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
 
-.info-item-d {
+.info-item {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
 }
 
-.info-label-d {
+.info-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -83,7 +101,7 @@
   font-weight: 500;
 }
 
-.info-value-d {
+.info-value {
   color: #1e293b;
   font-weight: 500;
   font-size: 1rem;

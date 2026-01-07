@@ -14,13 +14,13 @@ import type { ApplicantCreate, Applicant } from "../types/applicantServices";
 import "../styles/modal.css";
 import { toast } from "react-toastify";
 
-interface AddApplicantModalProps {
+interface ApplicantModalProps {
   isOpen: boolean;
   onClose: () => void;
   applicant?: Applicant | null;
 }
 
-const AddApplicantModal: React.FC<AddApplicantModalProps> = ({
+const ApplicantModal: React.FC<ApplicantModalProps> = ({
   isOpen,
   onClose,
   applicant = null,
@@ -485,4 +485,4 @@ const AddApplicantModal: React.FC<AddApplicantModalProps> = ({
   );
 };
 
-export default AddApplicantModal;
+export default ApplicantModal;

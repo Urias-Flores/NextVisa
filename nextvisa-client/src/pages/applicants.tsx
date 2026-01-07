@@ -8,9 +8,10 @@ import {
   faEnvelope,
   faCalendar,
   faSpinner,
+  faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useApplicants, useDeleteApplicant } from "../hooks/useApplicants";
-import AddApplicantModal from "../components/AddApplicantModal";
+import AddApplicantModal from "../components/ApplicantModal";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import type { Applicant } from "../types/applicantServices";
@@ -138,7 +139,10 @@ const Applicants: React.FC = () => {
           </div>
         ) : isError ? (
           <div className="error-state">
-            <div className="error-icon">⚠️</div>
+            <FontAwesomeIcon
+              icon={faExclamationCircle}
+              className="error-icon"
+            />
             <h3>Error Loading Applicants</h3>
             <p>
               {(error as Error)?.message ||

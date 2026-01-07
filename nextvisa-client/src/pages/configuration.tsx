@@ -12,11 +12,46 @@ import {
 import { type Configuration as configObject } from "../types/configuration";
 import { toast } from "react-toastify";
 import { useForm } from "@tanstack/react-form";
-import "../styles/configuration.css";
+import "../styles/pages/configuration.css";
 
 interface ConfigurationFormProps {
   config: configObject;
 }
+
+const Configuration: React.FC = () => {
+  const { data: config, isLoading, isError } = useConfiguration();
+
+  if (isLoading) {
+    return (
+      <div className="loading-state">
+        <FontAwesomeIcon icon={faSpinner} className="spinner" spin />
+        <p>Loading configuration...</p>
+      </div>
+    );
+  }
+
+  if (isError || !config) {
+    return (
+      <div className="error-state">
+        <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
+        <h3>Failed to Load Configuration</h3>
+        <p>Unable to load configuration settings. Please try again later.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container">
+      <div className="configuration-title header">
+        <div>
+          <h1>Configuration</h1>
+          <p>Manage application configuration</p>
+        </div>
+      </div>
+      <ConfigurationForm config={config} key={config.id} />
+    </div>
+  );
+};
 
 const ConfigurationForm: React.FC<ConfigurationFormProps> = ({ config }) => {
   const updateMutation = useUpdateConfiguration();
@@ -267,7 +302,7 @@ const ConfigurationForm: React.FC<ConfigurationFormProps> = ({ config }) => {
         <div className="form-actions">
           <button
             type="submit"
-            className="btn-primary"
+            className="btn"
             disabled={updateMutation.isPending}
           >
             {updateMutation.isPending ? (
@@ -284,42 +319,6 @@ const ConfigurationForm: React.FC<ConfigurationFormProps> = ({ config }) => {
           </button>
         </div>
       </form>
-    </div>
-  );
-};
-
-const Configuration: React.FC = () => {
-  const { data: config, isLoading, isError } = useConfiguration();
-
-  if (isLoading) {
-    return (
-      <div className="loading-state">
-        <FontAwesomeIcon icon={faSpinner} className="spinner" spin />
-        <p>Loading configuration...</p>
-      </div>
-    );
-  }
-
-  if (isError || !config) {
-    return (
-      <div className="error-state">
-        <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
-        <h3>Failed to Load Configuration</h3>
-        <p>Unable to load configuration settings. Please try again later.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container">
-      <div className="header">
-        <div>
-          <h1>Configuration</h1>
-          <p>Manage application settings for the re-scheduler</p>
-        </div>
-      </div>
-
-      <ConfigurationForm config={config} key={config.id} />
     </div>
   );
 };

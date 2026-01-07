@@ -10,13 +10,13 @@ import { useCreateReSchedule } from "../hooks/useReSchedules";
 import { ScheduleStatus } from "../types/reSchedule";
 import { toast } from "react-toastify";
 
-interface AddReScheduleModalProps {
+interface ReScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
   applicantId: number;
 }
 
-const AddReScheduleModal: React.FC<AddReScheduleModalProps> = ({
+const ReScheduleModal: React.FC<ReScheduleModalProps> = ({
   isOpen,
   onClose,
   applicantId,
@@ -192,4 +192,4 @@ const AddReScheduleModal: React.FC<AddReScheduleModalProps> = ({
   );
 };
 
-export default AddReScheduleModal;
+export default ReScheduleModal;

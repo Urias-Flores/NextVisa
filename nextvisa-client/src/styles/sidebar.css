@@ -7,7 +7,7 @@
   width: 260px;
   max-width: 260px;
   background: #ffffff;
-  padding: 2rem 0;
+  padding: 0;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
   border-right: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
@@ -19,7 +19,7 @@
 
 /* Sidebar Header */
 .sidebar-header {
-  padding: 0 1.5rem 2rem 1.5rem;
+  padding: 2rem 1.5rem 2rem 1.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
 }
@@ -35,6 +35,28 @@
   width: 85px;
   height: 85px;
   object-fit: contain;
+}
+
+.sidebar-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.sidebar-title h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 0.8;
+}
+
+.sidebar-title h2:nth-child(1) {
+  color: var(--red);
+}
+
+.sidebar-title h2:nth-child(2) {
+  color: var(--blue);
 }
 
 /* Sidebar Navigation */
@@ -137,6 +159,54 @@
   border-top: 1px solid #e2e8f0;
 }
 
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--red), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.user-email {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-status {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 500;
+}
+
 .logout-btn {
   width: 100%;
   display: flex;
@@ -201,6 +271,22 @@
 
   .sidebar-icon {
     font-size: 1.25rem;
+  }
+
+  /* Hide user info on mobile, only show avatar */
+  .sidebar-user {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
   }
 }
 
