@@ -659,7 +659,7 @@ textarea.form-input {
     border-radius: 4px;
 }
 
-.details-grid {
+.details-grid-d {
     display: grid;
     grid-template-columns: 350px 1fr;
     gap: 2rem;
@@ -671,7 +671,7 @@ textarea.form-input {
     }
 }
 
-.info-card {
+.info-card-d {
     background: white;
     border-radius: 16px;
     padding: 1.5rem;
@@ -680,7 +680,7 @@ textarea.form-input {
     height: fit-content;
 }
 
-.info-card h3 {
+.info-card-d h3 {
     margin: 0 0 1.5rem 0;
     color: #1e293b;
     font-size: 1.1rem;
@@ -688,19 +688,19 @@ textarea.form-input {
     padding-bottom: 1rem;
 }
 
-.info-list {
+.info-list-d {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
 }
 
-.info-item {
+.info-item-d {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
 }
 
-.info-label {
+.info-label-d {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -709,7 +709,7 @@ textarea.form-input {
     font-weight: 500;
 }
 
-.info-value {
+.info-value-d {
     color: #1e293b;
     font-weight: 500;
     font-size: 1rem;
@@ -778,9 +778,11 @@ textarea.form-input {
 }
 
 .status-badge.pending { background: #fff7ed; color: #c2410c; }
+.status-badge.scheduled { background: #fff7ed; color: #c2410c; }
 .status-badge.processing { background: #eff6ff; color: #1d4ed8; }
 .status-badge.completed { background: #f0fdf4; color: #15803d; }
 .status-badge.failed { background: #fef2f2; color: #b91c1c; }
+.status-badge.not_found { background: #e2e2e2; color: #000000; }
 
 .re-schedule-date {
     color: #94a3b8;
@@ -879,4 +881,295 @@ textarea.form-input {
 .filters, .actions {
     display: flex;
     gap: 0.7rem;
+}
+
+/* Re-Schedule Details Page */
+.re-schedule-details-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    padding: 0.3rem 0.5rem;
+    transition: all 0.2s;
+    border-radius: 6px;
+}
+
+.back-button:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.page-header h1 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.75rem;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.info-card h2 {
+    margin: 0 0 1.5rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 500;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: #1e293b;
+    font-weight: 500;
+    text-align: right;
+    max-width: 60%;
+    word-break: break-word;
+}
+
+.error-text {
+    color: #ef4444;
+}
+
+.logs-section {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.logs-section h2 {
+    margin: 0 0 1.5rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1rem;
+}
+
+.logs-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.logs-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+}
+
+.log-entry {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.log-entry:last-child {
+    margin-bottom: 0;
+}
+
+.log-icon-wrapper {
+    position: absolute;
+    left: -0.4rem;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid;
+    z-index: 1;
+}
+
+.log-icon {
+    font-size: 1rem;
+}
+
+.log-icon.error {
+    color: #ef4444;
+}
+
+.log-icon.warning {
+    color: #f59e0b;
+}
+
+.log-icon.success {
+    color: #10b981;
+}
+
+.log-icon.info {
+    color: #3b82f6;
+}
+
+.log-entry.error .log-icon-wrapper {
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.log-entry.warning .log-icon-wrapper {
+    border-color: #fde68a;
+    background: #fefce8;
+}
+
+.log-entry.success .log-icon-wrapper {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+}
+
+.log-entry.info .log-icon-wrapper {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+}
+
+.log-content {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 3px solid;
+}
+
+.log-entry.error .log-content {
+    border-left-color: #ef4444;
+}
+
+.log-entry.warning .log-content {
+    border-left-color: #f59e0b;
+}
+
+.log-entry.success .log-content {
+    border-left-color: #10b981;
+}
+
+.log-entry.info .log-content {
+    border-left-color: #3b82f6;
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.log-state {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.log-state.error {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.log-state.warning {
+    background: #fde68a;
+    color: #92400e;
+}
+
+.log-state.success {
+    background: #bbf7d0;
+    color: #14532d;
+}
+
+.log-state.info {
+    background: #bfdbfe;
+    color: #1e3a8a;
+}
+
+.log-time {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.log-message {
+    margin: 0;
+    color: #1e293b;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* View Logs Button */
+.btn-view-logs {
+    margin-top: 0.75rem;
+    background: #4A90E2;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2);
+}
+
+.btn-view-logs:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+}
+
+@media (max-width: 768px) {
+    .re-schedule-details-container {
+        padding: 1rem;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
 }

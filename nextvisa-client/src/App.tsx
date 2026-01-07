@@ -14,6 +14,7 @@ import Dashboard from "./pages/dashboard";
 import Applicants from "./pages/applicants";
 import ApplicantDetails from "./pages/applicantDetails";
 import ReSchedules from "./pages/reSchedules";
+import ReScheduleDetails from "./pages/reScheduleDetails";
 import Configuration from "./pages/configuration";
 import Login from "./pages/login";
 import "./styles/index.css";
@@ -54,6 +55,10 @@ function App() {
                           element={<ApplicantDetails />}
                         />
                         <Route path="/re-schedules" element={<ReSchedules />} />
+                        <Route
+                          path="/re-schedules/:id/logs"
+                          element={<ReScheduleDetails />}
+                        />
                         <Route
                           path="/configuration"
                           element={<Configuration />}

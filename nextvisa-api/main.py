@@ -25,26 +25,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from controllers.configuration_controller import router as configuration_router
 from controllers.applicant_controller import router as applicant_router
 from controllers.re_schedule_controller import router as re_schedule_router
-from lib.state_machine import state_machine
+from controllers.re_schedule_log_controller import router as re_schedule_log_router
+from lib.scheduler import scheduler
 
 logger = logging.getLogger(__name__)
 
-# Background state machine lifecycle
+# Background lifecycle
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting state machine")
+    logger.info("Starting Scheduler")
     try:
-        state_machine.start()
+        scheduler.start()
     except Exception as e:
-        logger.error(f"Error starting state machine: {e}", exc_info=True)
+        logger.error(f"Error starting Scheduler: {e}", exc_info=True)
     
     yield
     
-    logger.info("Stopping state machine")
+    logger.info("Stopping Scheduler")
     try:
-        state_machine.stop()
+        scheduler.stop()
     except Exception as e:
-        logger.error(f"Error stopping state machine: {e}", exc_info=True)
+        logger.error(f"Error stopping Scheduler: {e}", exc_info=True)
 
 app = FastAPI(
     title="NextVisa API",
@@ -86,3 +87,4 @@ def get_status():
 app.include_router(configuration_router, prefix="/api/configuration", tags=["configuration"])
 app.include_router(applicant_router, prefix="/api/applicants", tags=["applicants"])
 app.include_router(re_schedule_router, prefix="/api/re-schedules", tags=["re-schedules"])
+app.include_router(re_schedule_log_router)

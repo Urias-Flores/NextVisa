@@ -31,6 +31,15 @@ export const useReSchedulesByApplicant = (applicantId: number, limit?: number) =
     });
 };
 
+// Fetch single re-schedule by ID
+export const useReSchedule = (id: number) => {
+    return useQuery({
+        queryKey: reScheduleKeys.detail(id),
+        queryFn: () => reScheduleApi.getById(id),
+        enabled: !!id && id > 0,
+    });
+};
+
 // Create re-schedule mutation
 export const useCreateReSchedule = () => {
     const queryClient = useQueryClient();

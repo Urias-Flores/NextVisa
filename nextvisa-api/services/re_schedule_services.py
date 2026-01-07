@@ -1,4 +1,5 @@
 from lib.database import SupabaseConnection
+from lib.scheduler import scheduler
 from models.re_schedule import ReScheduleCreate, ReScheduleUpdate
 from lib.exceptions import DatabaseException
 import logging
@@ -182,6 +183,9 @@ def create_re_schedule(re_schedule_data: ReScheduleCreate) -> dict:
             
         created_re_schedule = response.data[0]
         logger.info(f"Successfully created re-schedule with ID {created_re_schedule.get('id')}")
+
+        scheduler.schedule_re_schedule(created_re_schedule.get('id'))
+        logger.info(f"Scheduled re-schedule {created_re_schedule.get('id')} ready for execution")
         return created_re_schedule
     except Exception as e:
         logger.error(f"Failed to create re-schedule: {str(e)}", exc_info=True)

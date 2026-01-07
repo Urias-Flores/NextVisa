@@ -1,6 +1,5 @@
 """Custom exceptions for NextVisa API"""
 
-
 class ApplicantNotFoundException(Exception):
     """Raised when an applicant is not found in the database"""
     def __init__(self, applicant_id: int):
