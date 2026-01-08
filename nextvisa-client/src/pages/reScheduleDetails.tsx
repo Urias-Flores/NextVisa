@@ -182,14 +182,16 @@ const ReScheduleDetails: React.FC = () => {
                 <div className="log-icon-wrapper">{getLogIcon(log.state)}</div>
                 <div className="log-content">
                   <div className="log-header">
-                    <span className={`log-state ${log.state.toLowerCase()}`}>
-                      {log.state}
-                    </span>
+                    <div className="log-message">
+                      <span className={`log-state ${log.state.toLowerCase()}`}>
+                        {log.state}
+                      </span>
+                      <p>{log.content}</p>
+                    </div>
                     <span className="log-time">
                       {formatDate(log.created_at)}
                     </span>
                   </div>
-                  <p className="log-message">{log.content}</p>
                 </div>
               </div>
             ))}

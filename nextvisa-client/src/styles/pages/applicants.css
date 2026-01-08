@@ -236,3 +236,14 @@
   min-height: 400px;
   text-align: center;
 }
+
+.re-schedule-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.separator-line {
+  width: 2px;
+  height: 2rem;
+  background: #e2e8f0;
+}

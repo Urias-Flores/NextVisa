@@ -143,8 +143,9 @@
 
 .log-icon-wrapper {
   position: absolute;
-  left: -0.4rem;
-  top: 0;
+  left: -0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
   width: 32px;
   height: 32px;
   background: white;
@@ -198,7 +199,7 @@
 
 .log-content {
   background: #f8fafc;
-  padding: 1rem;
+  padding: 0.6rem 1rem;
   border-radius: 8px;
   border-left: 3px solid;
 }
@@ -223,16 +224,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
 .log-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
 }
 
 .log-state.error {
@@ -261,8 +265,13 @@
 }
 
 .log-message {
+  display: flex;
+  gap: 1rem;
   margin: 0;
   color: #1e293b;
   font-size: 0.9rem;
-  line-height: 1.6;
+}
+
+.log-message p {
+  margin: 0;
 }
