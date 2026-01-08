@@ -223,6 +223,12 @@ def process_re_schedule(re_schedule_id: int):
                 driver.get(appointment_url)
                 time.sleep(2)
 
+            chosen_date = __get_available_date(dates_list, applicant)
+            if not chosen_date:
+                logger.info(f"No available dates for re-schedule {re_schedule_id} - will retry")
+                log_re_schedule(re_schedule_id, "No available dates at this time", LogState.WARNING)
+                continue
+
             # Get time for chosen date
             log_re_schedule(re_schedule_id, f"Checking available times for {chosen_date}", LogState.INFO)
             available_times = __get_times(driver, appointment_url, times_url_tmpl % chosen_date, re_schedule_id)
