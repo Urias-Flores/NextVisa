@@ -18,6 +18,7 @@ import {
   faArrowCircleUp,
   faKey,
   faEdit,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useApplicant, useTestCredentials } from "../hooks/useApplicants";
 import { useReSchedulesByApplicant } from "../hooks/useReSchedules";
@@ -327,19 +328,35 @@ const ApplicantDetails: React.FC = () => {
                         <strong>Error:</strong> {item.error}
                       </div>
                     )}
-                    {(item.status === ScheduleStatus.PROCESSING ||
-                      item.status === ScheduleStatus.COMPLETED ||
-                      item.status === ScheduleStatus.FAILED ||
-                      item.status === ScheduleStatus.NOT_FOUND) && (
-                      <button
-                        className="btn btn-small"
-                        onClick={() =>
-                          navigate(`/re-schedules/${item.id}/logs`)
-                        }
-                      >
-                        View Logs
+
+                    <div className="re-schedule-actions">
+                      {(item.status === ScheduleStatus.PROCESSING ||
+                        item.status === ScheduleStatus.COMPLETED ||
+                        item.status === ScheduleStatus.FAILED ||
+                        item.status === ScheduleStatus.NOT_FOUND ||
+                        item.status === ScheduleStatus.SCHEDULED) && (
+                        <>
+                          <button
+                            className="btn btn-small"
+                            onClick={() =>
+                              navigate(`/re-schedules/${item.id}/logs`)
+                            }
+                          >
+                            Logs
+                          </button>
+
+                          <div className="separator-line"></div>
+                        </>
+                      )}
+
+                      <button className="btn btn-rounded">
+                        <FontAwesomeIcon icon={faEdit} />
                       </button>
-                    )}
+
+                      <button className="btn btn-rounded">
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

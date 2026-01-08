@@ -493,6 +493,29 @@ h1 {
   transition: all 0.2s;
   transform: translateY(0px) !important;
 }
+
+.btn-rounded {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.7rem;
+  background-color: white;
+  box-shadow: none;
+  border: 1px solid white;
+}
+
+.btn-rounded svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--gray);
+  margin: 0;
+}
+
+.btn-rounded:hover {
+  border: 1px solid #94a3b8;
+  background-color: white;
+}
 /* ------------------------- Buttons ------------------------- */
 
 /* ------------------------- SweetAlert2 Custom Styles ------------------------- */

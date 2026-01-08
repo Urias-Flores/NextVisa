@@ -81,6 +81,13 @@ class Scheduler:
             logger.warning(f"Applicant {schedule.get('applicant')} not found")
             return
         decrypted_password = decrypt_password(applicant.get("password"))
+        re_schedule_log_services.create_re_schedule_log(
+            ReScheduleLogCreate(
+                re_schedule=schedule_id,
+                state=LogState.WARNING,
+                content="Applicant login attempt"
+            )
+        )
         result = applicant_web_services.test_credentials(applicant.get("email"), decrypted_password)
 
         if not result or not result.get("success"):
@@ -105,6 +112,14 @@ class Scheduler:
             )
             return
 
+        re_schedule_log_services.create_re_schedule_log(
+            ReScheduleLogCreate(
+                re_schedule=schedule_id,
+                state=LogState.SUCCESS,
+                content="Applicant login successful. Scheduling re-schedule"
+            )
+        )
+
         with self.lock:
             job = self.scheduler.add_job(
                 applicant_web_services.process_re_schedule, 
@@ -121,6 +136,14 @@ class Scheduler:
                 ReScheduleUpdate(status=ScheduleStatus.SCHEDULED)
             )
             logger.info(f"Updated re-schedule {schedule_id} status to SCHEDULED")
+
+            re_schedule_log_services.create_re_schedule_log(
+                ReScheduleLogCreate(
+                    re_schedule=schedule_id,
+                    state=LogState.INFO,
+                    content="Re-schedule process scheduled successfully"
+                )
+            )
 
 # Singleton instance
 scheduler = Scheduler()
