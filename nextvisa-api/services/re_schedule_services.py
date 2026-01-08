@@ -4,6 +4,7 @@ from models.re_schedule import ReScheduleCreate, ReScheduleUpdate
 from lib.exceptions import DatabaseException
 import logging
 from typing import List, Optional
+from lib.scheduler import scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -261,8 +262,16 @@ def delete_re_schedule(re_schedule_id: int) -> bool:
         raise ValueError("Re-schedule ID is required")
         
     # First check if re-schedule exists
-    get_re_schedule_by_id(re_schedule_id)
+    re_schedule = get_re_schedule_by_id(re_schedule_id)
     
+    # Remove job from scheduler if it's scheduled or processing
+    if re_schedule.get("status") in ["SCHEDULED", "PROCESSING"]:
+        try:
+            scheduler.remove_job(re_schedule_id)
+            logger.info(f"Removed job for re-schedule {re_schedule_id} from scheduler")
+        except Exception as e:
+            logger.warning(f"Could not remove job from scheduler for re-schedule {re_schedule_id}: {e}")
+
     try:
         db = _get_db()
         response = db.table(TABLE_NAME).delete().eq("id", re_schedule_id).execute()

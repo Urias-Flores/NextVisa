@@ -145,5 +145,28 @@ class Scheduler:
                 )
             )
 
+            logger.info(f"Jobs after scheduling: {[job.id for job in self.scheduler.get_jobs()]}")
+    
+    def remove_job(self, reschedule_id: int):
+        with self.lock:
+            job_id = f"rs_{reschedule_id}"
+            
+            if reschedule_id in self.jobs:
+                try:
+                    self.scheduler.remove_job(job_id)
+                    del self.jobs[reschedule_id]
+                    logger.info(f"Successfully removed job {job_id}")
+                except Exception as e:
+                    logger.error(f"Error removing job {job_id}: {e}")
+            else:
+                logger.warning(f"Job {job_id} not found in tracking dictionary. Attempting to remove from scheduler anyway.")
+                try:
+                    self.scheduler.remove_job(job_id)
+                    logger.info(f"Successfully removed job {job_id} from scheduler")
+                except Exception as e:
+                    logger.warning(f"Job {job_id} not found in scheduler: {e}")
+        
+        logger.info(f"Jobs after removal: {[job.id for job in self.scheduler.get_jobs()]}")
+
 # Singleton instance
 scheduler = Scheduler()

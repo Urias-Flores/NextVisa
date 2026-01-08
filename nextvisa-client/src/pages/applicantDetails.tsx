@@ -21,12 +21,16 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useApplicant, useTestCredentials } from "../hooks/useApplicants";
-import { useReSchedulesByApplicant } from "../hooks/useReSchedules";
+import {
+  useDeleteReSchedule,
+  useReSchedulesByApplicant,
+} from "../hooks/useReSchedules";
 import ReScheduleModal from "../components/ReScheduleModal";
 import ApplicantModal from "../components/ApplicantModal";
 import { ScheduleStatus } from "../types/reSchedule";
 import { formatDate, formatDateOnly } from "../utils/dateFormatter";
 import "../styles/pages/applicants.css";
+import Swal from "sweetalert2";
 
 const ApplicantDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,6 +49,7 @@ const ApplicantDetails: React.FC = () => {
     useReSchedulesByApplicant(applicantId);
 
   const testCredentialsMutation = useTestCredentials();
+  const deleteReScheduleMutation = useDeleteReSchedule();
 
   const handleTestCredentials = async () => {
     const toastId = toast.info("Testing credentials...", { autoClose: false });
@@ -71,6 +76,27 @@ const ApplicantDetails: React.FC = () => {
       toast.dismiss(toastId);
       toast.error("Failed to test credentials. Please try again.");
     }
+  };
+
+  const handleDeleteReSchedule = async (reScheduleId: number) => {
+    Swal.fire({
+      title: "Are you sure you want to delete this re-schedule?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "var(--blue)",
+      cancelButtonColor: "var(--red)",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        try {
+          deleteReScheduleMutation.mutateAsync(reScheduleId);
+          toast.success("Re-schedule deleted successfully");
+        } catch {
+          toast.error("Failed to delete re-schedule. Please try again.");
+        }
+      }
+    });
   };
 
   const getStatusIcon = (status: ScheduleStatus) => {
@@ -353,7 +379,10 @@ const ApplicantDetails: React.FC = () => {
                         <FontAwesomeIcon icon={faEdit} />
                       </button>
 
-                      <button className="btn btn-rounded">
+                      <button
+                        className="btn btn-rounded"
+                        onClick={() => handleDeleteReSchedule(item.id)}
+                      >
                         <FontAwesomeIcon icon={faTrash} />
                       </button>
                     </div>
