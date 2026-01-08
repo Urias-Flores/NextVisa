@@ -161,78 +161,147 @@ def process_re_schedule(re_schedule_id: int):
 
         re_schudule_completed = False
         datetime_found = False
-        while datetime.strptime(str(rs.get('end_datetime')).replace("T", " "), "%Y-%m-%d %H:%M:%S") <= datetime.now() or not re_schudule_completed:
+        
+        # Parse end_datetime once to avoid repeated parsing
+        end_datetime = datetime.strptime(str(rs.get('end_datetime')).replace("T", " "), "%Y-%m-%d %H:%M:%S")
+        logger.info(f"Starting re-schedule loop for {re_schedule_id} until {end_datetime}")
+        log_re_schedule(re_schedule_id, f"Starting re-schedule monitoring until {end_datetime}", LogState.INFO)
+        
+        # Continue while current time is BEFORE end_datetime AND process not completed
+        while datetime.now() < end_datetime and not re_schudule_completed:
             time.sleep(config.sleep_time)
+            logger.info(f"Re-schedule {re_schedule_id}: Checking for available appointments...")
+
+            # Check session before getting dates
+            if __is_session_expired(driver):
+                logger.warning(f"Session expired before checking dates for re-schedule {re_schedule_id}")
+                if not __attempt_relogin_with_retry(driver, login_url, email, password, re_schedule_id):
+                    # Failed to recover session - terminate process
+                    raise Exception("Session expired and could not be recovered after 3 attempts")
+                
+                # After successful re-login, navigate back to appointment page
+                logger.info(f"Navigating back to appointment page after re-login")
+                driver.get(appointment_url)
+                time.sleep(2)
 
             # Get available dates via requests with Selenium cookies
+            log_re_schedule(re_schedule_id, "Checking for available dates", LogState.INFO)
             dates = __get_dates(driver, appointment_url, days_url, re_schedule_id)
-            if len(dates) == 0:
-                logger.info(f"No dates available for re-schedule {re_schedule_id}")
-                re_schedule_services.update_re_schedule(
-                    re_schedule_id,
-                    ReScheduleUpdate(error="No dates available")
-                )
-                log_re_schedule(re_schedule_id, "No dates available", LogState.ERROR)
+            
+            # Handle empty response
+            if not dates:
+                logger.info(f"No dates available for re-schedule {re_schedule_id} - will retry in next iteration")
+                log_re_schedule(re_schedule_id, "No dates available at this time", LogState.WARNING)
                 continue
             
-            logger.info(f"Earlier date available: {dates[0]}")
-            log_re_schedule(re_schedule_id, f"Earlier date available: {dates[0]}", LogState.INFO)
+            # Extract dates list from response (can be dict or list)
             if isinstance(dates, dict):
                 dates_list: List[dict] = dates.get('available_dates') or dates.get('dates') or []
             elif isinstance(dates, list):
                 dates_list = dates
             else:
-                dates_list = []
+                logger.warning(f"Unexpected dates format for re-schedule {re_schedule_id}: {type(dates)}")
+                log_re_schedule(re_schedule_id, f"Unexpected dates format received", LogState.WARNING)
+                continue
+            
+            # Check if we actually have dates
+            if not dates_list or len(dates_list) == 0:
+                logger.info(f"No dates in list for re-schedule {re_schedule_id} - will retry")
+                log_re_schedule(re_schedule_id, "No dates available at this time", LogState.WARNING)
+                continue
+            
+            # Log the earliest available date
+            earliest_date = dates_list[0].get('date') if isinstance(dates_list[0], dict) else dates_list[0]
+            logger.info(f"Earlier date available: {earliest_date}")
+            log_re_schedule(re_schedule_id, f"Earlier date available: {earliest_date}", LogState.INFO)
+
+            # Check session before getting times
+            if __is_session_expired(driver):
+                logger.warning(f"Session expired before checking times for re-schedule {re_schedule_id}")
+                if not __attempt_relogin_with_retry(driver, login_url, email, password, re_schedule_id):
+                    raise Exception("Session expired and could not be recovered after 3 attempts")
+                driver.get(appointment_url)
+                time.sleep(2)
 
             chosen_date = __get_available_date(dates_list, applicant)
             if not chosen_date:
-                logger.info(f"No suitable date found for re-schedule {re_schedule_id}")
-                re_schedule_services.update_re_schedule(
-                    re_schedule_id,
-                    ReScheduleUpdate(error="No suitable date found")
-                )
-                log_re_schedule(re_schedule_id, "No suitable date found.", LogState.ERROR)
+                logger.info(f"No available dates for re-schedule {re_schedule_id} - will retry")
+                log_re_schedule(re_schedule_id, "No available dates at this time", LogState.WARNING)
                 continue
 
-            # Get time for chosen a date
+            # Get time for chosen date
+            log_re_schedule(re_schedule_id, f"Checking available times for {chosen_date}", LogState.INFO)
             available_times = __get_times(driver, appointment_url, times_url_tmpl % chosen_date, re_schedule_id)
+            
+            # Handle empty response or unexpected format
             if not available_times:
-                logger.info(f"No times available for date {chosen_date}")
-                re_schedule_services.update_re_schedule(
-                    re_schedule_id,
-                    ReScheduleUpdate(error="No suitable time found")
-                )
-                log_re_schedule(re_schedule_id, "No suitable time found.", LogState.ERROR)
+                logger.info(f"No times available for date {chosen_date} - will retry")
+                log_re_schedule(re_schedule_id, f"No times available for {chosen_date}", LogState.WARNING)
                 continue
+            
+            # Validate that we have a list with items
+            if not isinstance(available_times, list) or len(available_times) == 0:
+                logger.info(f"Invalid times format or empty list for {chosen_date} - will retry")
+                log_re_schedule(re_schedule_id, f"Invalid times data received for {chosen_date}", LogState.WARNING)
+                continue
+                
             time_slot = available_times[-1]
+            logger.info(f"Selected time slot: {time_slot} for date {chosen_date}")
+            log_re_schedule(re_schedule_id, f"Selected appointment: {chosen_date} at {time_slot}", LogState.INFO)
 
             datetime_found = True
-            # Perform reschedule via POST with cookies
-            log_re_schedule(re_schedule_id, "Performing reschedule. A date and time has been selected.", LogState.INFO)
-            rescheduled = __perform_reschedule(driver, appointment_url, chosen_date, time_slot, re_schedule_id)
-            log_re_schedule(re_schedule_id, f"Reschedule performed. result: {rescheduled}", LogState.INFO)
+            
+            # Check session before performing reschedule
+            if __is_session_expired(driver):
+                logger.warning(f"Session expired before performing reschedule for re-schedule {re_schedule_id}")
+                if not __attempt_relogin_with_retry(driver, login_url, email, password, re_schedule_id):
+                    raise Exception("Session expired and could not be recovered after 3 attempts")
+                driver.get(appointment_url)
+                time.sleep(2)
 
+            # Perform reschedule via POST with cookies
+            log_re_schedule(re_schedule_id, "Attempting to perform reschedule with selected date and time", LogState.INFO)
+            rescheduled = __perform_reschedule(driver, appointment_url, chosen_date, time_slot, re_schedule_id)
+            
             if rescheduled:
                 re_schuduel_completed = True
+                logger.info(f"Re-schedule {re_schedule_id} completed successfully!")
                 re_schedule_services.update_re_schedule(
                     re_schedule_id,
                     ReScheduleUpdate(status=ScheduleStatus.COMPLETED, error=None, end_datetime=datetime.now())
                 )
+                log_re_schedule(
+                    re_schedule_id, 
+                    f"Re-schedule completed successfully! New appointment: {chosen_date} at {time_slot}", 
+                    LogState.SUCCESS
+                )
                 pushhover.send_message(f"Successfully Rescheduled for {applicant.get('name')} {applicant.get('last_name')} on {chosen_date} at {time_slot}")
+                
+                # Exit loop - process completed successfully
+                break
             else:
-                # If POST failed, leave processing to retry later
-                logger.warning(f"Reschedule POST failed for {re_schedule_id}, will retry")
+                # If POST failed, stop the process immediately (fail-fast)
+                error_msg = "Reschedule POST request failed. Stopping process for safety."
+                logger.error(f"{error_msg} Re-schedule ID: {re_schedule_id}")
+                log_re_schedule(re_schedule_id, error_msg, LogState.ERROR)
+                re_schedule_services.update_re_schedule(
+                    re_schedule_id,
+                    ReScheduleUpdate(status=ScheduleStatus.FAILED, error=error_msg, end_datetime=datetime.now())
+                )
+                raise Exception(error_msg)
         
         if not datetime_found:
-            logger.info(f"No suitable date found for re-schedule {re_schedule_id}")
+            logger.info(f"No suitable date found within time window for re-schedule {re_schedule_id}")
             re_schedule_services.update_re_schedule(
                 re_schedule_id,
                 ReScheduleUpdate(status=ScheduleStatus.NOT_FOUND, end_datetime=datetime.now(), error="No suitable date found")
             )
-            log_re_schedule(re_schedule_id, "No suitable date found.", LogState.ERROR)
+            log_re_schedule(re_schedule_id, "Time window expired without finding suitable appointment", LogState.ERROR)
 
     except Exception as e:
         logger.error(f"Error processing re-schedule {re_schedule_id}: {e}", exc_info=True)
+        log_re_schedule(re_schedule_id, f"Critical error during re-schedule process: {str(e)}", LogState.ERROR)
+        
         try:
             re_schedule_services.update_re_schedule(
                 re_schedule_id,
@@ -241,11 +310,8 @@ def process_re_schedule(re_schedule_id: int):
         except Exception as ex:
             logger.exception("Error updating re-schedule status", ex,  exc_info=True)
     finally:
-        try:
-            if driver:
-                driver.quit()
-        except Exception as ex:
-            logger.warning("Could not quit Selenium driver", ex)
+        # Always ensure driver is properly cleaned up
+        __safe_quit_driver(driver)
 
 def __perform_reschedule(driver, appointment_url: str, date_str: str, time_slot: str, re_schedule_id: int) -> bool:
     data = {
@@ -343,9 +409,22 @@ def __get_dates(driver, appointment_url: str, date_url: str, re_schedule_id: int
         "User-Agent": driver.execute_script("return navigator.userAgent;")
     }
 
-    r = session.get(date_url, headers=headers, allow_redirects=True, timeout=15)
-    logger.info(f"status: {r.status_code}")
-    logger.info(f"text (start): {r.text[:200]}")
+    try:
+        r = session.get(date_url, headers=headers, allow_redirects=True, timeout=15)
+        logger.info(f"Get dates - status: {r.status_code}")
+        logger.debug(f"Get dates - response preview: {r.text[:200]}")
+    except requests.exceptions.Timeout:
+        logger.warning(f"Timeout getting dates for re-schedule {re_schedule_id} - server took too long to respond")
+        log_re_schedule(re_schedule_id, "Timeout while fetching available dates - will retry", LogState.WARNING)
+        return []
+    except requests.exceptions.ConnectionError as e:
+        logger.warning(f"Connection error getting dates for re-schedule {re_schedule_id}: {e}")
+        log_re_schedule(re_schedule_id, "Network connection error while fetching dates - will retry", LogState.WARNING)
+        return []
+    except Exception as e:
+        logger.error(f"Unexpected error getting dates for re-schedule {re_schedule_id}: {e}")
+        log_re_schedule(re_schedule_id, f"Error fetching dates: {str(e)}", LogState.ERROR)
+        return []
 
     try:
         data = r.json()
@@ -366,9 +445,22 @@ def __get_times(driver, appointment_url: str, time_url: str, re_schedule_id: int
         "User-Agent": driver.execute_script("return navigator.userAgent;")
     }
 
-    r = session.get(time_url, headers=headers, allow_redirects=True, timeout=15)
-    logger.info(f"status: {r.status_code}")
-    logger.info(f"text (start): {r.text[:200]}")
+    try:
+        r = session.get(time_url, headers=headers, allow_redirects=True, timeout=15)
+        logger.info(f"Get times - status: {r.status_code}")
+        logger.debug(f"Get times - response preview: {r.text[:200]}")
+    except requests.exceptions.Timeout:
+        logger.warning(f"Timeout getting times for re-schedule {re_schedule_id} - server took too long to respond")
+        log_re_schedule(re_schedule_id, "Timeout while fetching available times - will retry", LogState.WARNING)
+        return []
+    except requests.exceptions.ConnectionError as e:
+        logger.warning(f"Connection error getting times for re-schedule {re_schedule_id}: {e}")
+        log_re_schedule(re_schedule_id, "Network connection error while fetching times - will retry", LogState.WARNING)
+        return []
+    except Exception as e:
+        logger.error(f"Unexpected error getting times for re-schedule {re_schedule_id}: {e}")
+        log_re_schedule(re_schedule_id, f"Error fetching times: {str(e)}", LogState.ERROR)
+        return []
 
     try:
         data = r.json()
@@ -401,7 +493,128 @@ def __get_available_date(dates: List[dict], applicant: dict) :
             return current_date.strftime('%Y-%m-%d')
     return None
 
+
+def __safe_quit_driver(driver):
+    """
+    Safely quit the Selenium driver to prevent zombie processes.
+    
+    Args:
+        driver: Selenium WebDriver instance
+    """
+    if driver:
+        try:
+            logger.info("Attempting to quit Selenium driver")
+            driver.quit()
+            logger.info("Driver quit successfully")
+        except Exception as e:
+            logger.warning(f"Error quitting driver (may already be closed): {e}")
+            try:
+                # Force kill if quit failed
+                driver.close()
+                logger.info("Driver forcefully closed")
+            except:
+                logger.warning("Could not close driver - may be already terminated")
+
+
+def __is_session_expired(driver) -> bool:
+    """
+    Check if the Selenium session has expired.
+    
+    Args:
+        driver: Selenium WebDriver instance
+        
+    Returns:
+        True if session appears expired, False otherwise
+    """
+    try:
+        # Check if we're on the login page
+        current_url = driver.current_url
+        if '/users/sign_in' in current_url or '/login' in current_url:
+            logger.warning("Session expired - redirected to login page")
+            return True
+            
+        # Check if login form elements are present (indicates session expired)
+        login_elements = driver.find_elements(By.ID, 'user_email')
+        if login_elements:
+            logger.warning("Session expired - login form detected")
+            return True
+            
+        return False
+    except Exception as e:
+        logger.error(f"Error checking session status: {e}")
+        # Assume session is valid if we can't determine
+        return False
+
+
+def __attempt_relogin_with_retry(driver, login_url: str, email: str, password: str, 
+                                  re_schedule_id: int, max_retries: int = 3) -> bool:
+    """
+    Attempt to re-login after session expiration, with retry logic.
+    
+    Args:
+        driver: Selenium WebDriver instance
+        login_url: URL for login page
+        email: User email
+        password: User password
+        re_schedule_id: ID of the re-schedule process
+        max_retries: Maximum number of retry attempts
+        
+    Returns:
+        True if login successful, False if all attempts failed
+    """
+    logger.warning(f"Session expired for re-schedule {re_schedule_id}. Attempting to re-login...")
+    log_re_schedule(re_schedule_id, "Session expired during process. Attempting automatic re-login.", LogState.WARNING)
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            logger.info(f"Re-login attempt {attempt}/{max_retries} for re-schedule {re_schedule_id}")
+            log_re_schedule(
+                re_schedule_id, 
+                f"Re-login attempt {attempt} of {max_retries}", 
+                LogState.INFO
+            )
+            
+            # Attempt login
+            __do_login(driver, login_url, email, password)
+            
+            # Verify login was successful
+            time.sleep(2)
+            if not __is_session_expired(driver):
+                logger.info(f"Re-login successful on attempt {attempt}/{max_retries}")
+                log_re_schedule(
+                    re_schedule_id, 
+                    f"Successfully re-logged in after {attempt} attempt(s)", 
+                    LogState.INFO
+                )
+                return True
+            else:
+                logger.warning(f"Re-login attempt {attempt} appeared to fail - still on login page")
+                
+        except Exception as e:
+            logger.error(f"Re-login attempt {attempt}/{max_retries} failed: {e}", exc_info=True)
+            log_re_schedule(
+                re_schedule_id, 
+                f"Re-login attempt {attempt} failed: {str(e)}", 
+                LogState.ERROR
+            )
+        
+        # Wait before next retry (unless this was the last attempt)
+        if attempt < max_retries:
+            logger.info(f"Waiting 2 seconds before retry attempt {attempt + 1}")
+            time.sleep(2)
+    
+    # All attempts failed
+    logger.error(f"All {max_retries} re-login attempts failed for re-schedule {re_schedule_id}")
+    log_re_schedule(
+        re_schedule_id, 
+        f"Failed to re-login after {max_retries} attempts. Session cannot be recovered.", 
+        LogState.ERROR
+    )
+    return False
+
+
 def log_re_schedule(re_schedule_id: int, content: str, state: LogState):
+
     try:
         re_schedule_log_services.create_re_schedule_log(ReScheduleLogCreate(re_schedule=re_schedule_id, state=state, content=content))
     except Exception as e:
