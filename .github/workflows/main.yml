@@ -71,21 +71,21 @@ jobs:
                 -o StrictHostKeyChecking=no \
                 -o ServerAliveInterval=15 \
                 -o ServerAliveCountMax=10" \
-            ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
+            ./dist ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}/
 
-      - name: Deploy ecosystem.config.js
+      - name: Deploy client ecosystem.config.js
         run: |
           scp -P ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no \
             ./nextvisa-client/ecosystem.config.js \
             ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}/ecosystem.config.js
 
-      - name: Stop and delete pm2 client service
+      - name: Restart pm2 client service
         run: |
-          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo pm2 stop nextvisa-client || echo "Service not running"; sudo pm2 delete nextvisa-client || echo "Service not found"'
-
-      - name: Start pm2 client service
-        run: |
-          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'cd ${{ secrets.DO_CLIENT_DIR }} && sudo pm2 start ecosystem.config.js'
+          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} '
+            sudo pm2 stop nextvisa-client || echo "Service not running"
+            sudo pm2 delete nextvisa-client || echo "Service not found"
+            cd ${{ secrets.DO_CLIENT_DIR }} && sudo pm2 start ecosystem.config.js
+          '
 
   test_and_deploy_api:
     name: Test & Deploy API
