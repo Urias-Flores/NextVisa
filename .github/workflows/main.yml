@@ -136,7 +136,8 @@ jobs:
             tar -xzf api-deploy.tar.gz -C .
             rm api-deploy.tar.gz
             
-            python3 -m venv .venv || true
+            rm -rf .venv
+            python3 -m venv .venv
             source .venv/bin/activate
             pip3 install --upgrade pip
             pip3 install -r requirements.txt
