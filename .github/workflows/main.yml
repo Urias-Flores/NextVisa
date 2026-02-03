@@ -70,9 +70,13 @@ jobs:
                 -o ServerAliveCountMax=10" \
             ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
 
-      - name: Restart pm2 service
+      - name: Stop and delete pm2 client service
         run: |
-          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo pm2 restart nextvisa-app'
+          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'sudo pm2 stop nextvisa-client || echo "Service not running"; sudo pm2 delete nextvisa-client || echo "Service not found"'
+
+      - name: Start pm2 client service
+        run: |
+          ssh -p ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }} 'cd ${{ secrets.DO_CLIENT_DIR }} && sudo pm2 start ecosystem.config.js'
 
   test_and_deploy_api:
     name: Test & Deploy API
@@ -128,5 +132,7 @@ jobs:
             pip3 install --upgrade pip
             pip3 install -r requirements.txt
             
-            sudo pm2 restart nextvisa-api || echo "Service not found"
+            sudo pm2 stop nextvisa-api || echo "Service not running"
+            sudo pm2 delete nextvisa-api || echo "Service not found"
+            sudo pm2 start ecosystem.config.js
           '
