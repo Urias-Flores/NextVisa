@@ -48,6 +48,9 @@ jobs:
     needs: test_and_build_client
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download client build artifact
         uses: actions/download-artifact@v4
         with:
@@ -69,6 +72,12 @@ jobs:
                 -o ServerAliveInterval=15 \
                 -o ServerAliveCountMax=10" \
             ./dist/ ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}
+
+      - name: Deploy ecosystem.config.js
+        run: |
+          scp -P ${{ secrets.DO_SSH_PORT }} -o StrictHostKeyChecking=no \
+            ./nextvisa-client/ecosystem.config.js \
+            ${{ secrets.DO_SSH_USER }}@${{ secrets.DO_SERVER_HOST }}:${{ secrets.DO_CLIENT_DIR }}/ecosystem.config.js
 
       - name: Stop and delete pm2 client service
         run: |
