@@ -2,7 +2,7 @@
 
 QuickVisa is a comprehensive visa application management system designed to automate and streamline the process of managing visa applications and scheduling appointments. The application monitors applicant credentials, automatically checks for available appointment slots, and manages rescheduling workflows.
 
-## 📋 Project Overview
+## Project Overview
 
 QuickVisa consists of two main components:
 
@@ -11,7 +11,7 @@ QuickVisa consists of two main components:
 
 The system integrates with Supabase for data persistence and uses Selenium for automated web scraping and credential validation.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend (`nextvisa-client`)
 
@@ -36,7 +36,7 @@ The system integrates with Supabase for data persistence and uses Selenium for a
 - **Passlib** - Password hashing
 - **Python-dotenv** - Environment variable management
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 QuickVisa/
@@ -56,7 +56,7 @@ QuickVisa/
 └── README.md
 ```
 
-## ⚙️ Prerequisites
+## Prerequisites
 
 Before running the project, ensure you have the following installed:
 
@@ -65,7 +65,7 @@ Before running the project, ensure you have the following installed:
 - **Git**
 - A **Supabase** account and project
 
-## 🚀 Setup and Installation
+## Setup and Installation
 
 ### 1. Clone the Repository
 
@@ -138,7 +138,7 @@ VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-## 🏃 Running the Project
+## Running the Project
 
 ### Start the Backend API
 
@@ -163,7 +163,7 @@ npm run dev
 
 The client will be available at `http://localhost:5173`
 
-## 🔑 Key Features
+## Key Features
 
 - **Applicant Management**: Create, read, update, and delete applicant information
 - **Credential Testing**: Automated validation of applicant credentials using Selenium
@@ -172,7 +172,7 @@ The client will be available at `http://localhost:5173`
 - **Real-time Notifications**: Toast notifications for user feedback
 - **State Machine**: Automated workflow management for appointment scheduling
 
-## 📝 API Endpoints
+## API Endpoints
 
 - `GET /` - API health check
 - `GET /status` - Detailed service status
@@ -180,19 +180,19 @@ The client will be available at `http://localhost:5173`
 - `/api/applicants` - Applicant CRUD operations
 - `/api/re-schedules` - Rescheduling management
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 👥 Authors
+## Authors
 
 - Urias Flores
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
